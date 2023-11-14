@@ -44,7 +44,7 @@ const Navbar = () => {
                     <img src="" alt="Profile Picture" className="relative w-8 h-8 rounded-full cursor-pointer" onClick={toggleProfileMenu} />
                     {
                         profileMenu &&
-                        <div className="absolute bg-yellow-500 text-left top-14 right-10 z-10 text-black rounded-md px-3 py-2 text-sm font-medium space-y-4" style={{ minWidth: '150px' }}>
+                        <div className="absolute bg-yellow-500 text-left top-14 right-10 z-20 text-black rounded-md px-3 py-2 text-sm font-medium space-y-4" style={{ minWidth: '150px' }}>
                             <ul >
                                 {
                                     profileMenuItems.map((item) => (
@@ -66,15 +66,15 @@ const Navbar = () => {
                     </div>
                 </div>
             </div>
-            <div className={`bg-blue-500 min-w-full flex justify-between flex-col items-start nav-menu ${navMenu ? 'active' : ''}`}>
-                <div className='flex ml-4 flex-col items-start'>
+            <div className={`flex justify-between flex-col items-start nav-menu ${navMenu ? 'active' : ''}`}>
+                <div className='absolute z-10 bg-blue-500 min-w-full flex flex-col items-start'>
                     {
                         navMenu &&
                         navItems.map((item) => (
                             <a
                                 key={item.name}
                                 href={item.path}
-                                className='text-black rounded-md px-3 py-2 text-sm font-medium'
+                                className='text-black rounded-md ml-4 px-3 py-2 text-sm font-medium'
                             >
                                 {item.name}
                             </a>
