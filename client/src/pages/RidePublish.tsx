@@ -1,8 +1,9 @@
-import React from 'react'
 
 const RidePublish = () => {
   return (
-    <div>RidePublish</div>
+    <>
+      <div>RidePublish</div>
+    </>
   )
 }
 

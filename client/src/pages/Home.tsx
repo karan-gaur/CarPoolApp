@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import heroImage from '../assets/hero.jpg';
 import Test from '../components/Test';
+import Transition from '../components/Transition';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,14 +20,13 @@ const Home = () => {
             },
         });
 
-        // Add animations to the timeline
         tl.to('.hero-text', {
             y: -200,
             fontSize: '2rem',
         });
 
         gsap.to('.hero-image', {
-            scale: 1.5, // Ending scale
+            scale: 1.5,
             scrollTrigger: {
                 trigger: '.hero-image',
                 start: 'top 40%',

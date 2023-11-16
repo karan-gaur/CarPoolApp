@@ -54,7 +54,7 @@ const Navbar = () => {
                                             key={item.name}
                                             className='text-black rounded-md px-3 py-2 text-sm font-medium'
                                         >
-                                            <Link to={item.path}>{item.name}</Link>
+                                            <Link onClick={() => setProfileMenu(false)} to={item.path}>{item.name}</Link>
                                         </li>
                                     ))
                                 }
@@ -73,13 +73,14 @@ const Navbar = () => {
                     {
                         navMenu &&
                         navItems.map((item) => (
-                            <a
-                                key={item.name}
-                                href={item.path}
+                            <Link
+                                onClick={() => setNavMenu(false)}
+                                key={item.path}
+                                to={item.path}
                                 className='text-black rounded-md ml-4 px-3 py-2 text-sm font-medium'
                             >
                                 {item.name}
-                            </a>
+                            </Link>
                         ))
                     }
                 </div>
