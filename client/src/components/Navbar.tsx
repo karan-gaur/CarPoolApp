@@ -1,5 +1,6 @@
 import React from 'react'
 import './Navbar.css';
+import { Link } from 'react-router-dom';
 
 interface NavItem {
     name: string,
@@ -9,15 +10,16 @@ interface NavItem {
 
 const navItems: Array<NavItem> = [
     { name: 'Home', path: '/', current: true },
-    { name: 'Search Ride', path: '/searchride', current: false },
-    { name: 'Publish Ride', path: '/publishride', current: false },
+    { name: 'Search Ride', path: '/ride-search', current: false },
+    { name: 'Publish Ride', path: '/ride-publish', current: false },
+    { name: 'Ride Status', path: '/ride-status', current: false },
     { name: 'Contact us', path: '/contact', current: false },
 ]
 
 const profileMenuItems: Array<NavItem> = [
     { name: 'Profile', path: '/profile', current: false },
     { name: 'Login', path: '/login', current: false },
-    { name: 'Logout', path: '/logout', current: false },
+    { name: 'Logout', path: '/signup', current: false },
 ]
 
 const Navbar = () => {
@@ -52,7 +54,7 @@ const Navbar = () => {
                                             key={item.name}
                                             className='text-black rounded-md px-3 py-2 text-sm font-medium'
                                         >
-                                            <a href={item.path}>{item.name}</a>
+                                            <Link to={item.path}>{item.name}</Link>
                                         </li>
                                     ))
                                 }

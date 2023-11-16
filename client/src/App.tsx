@@ -1,17 +1,24 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { Route, Routes } from 'react-router-dom'
 import './App.css'
 import Navbar from './components/Navbar'
-import Hero from './pages/Hero'
-import Test from './components/Test'
+import { publicRoutes } from './routes'
 
 function App() {
 
   return (
     <>
       <Navbar />
-      <Hero />
+      <Routes>
+        {
+          publicRoutes.map(route => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={route.element}
+            />
+          ))
+        }
+      </Routes>
     </>
   )
 }

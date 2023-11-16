@@ -6,7 +6,7 @@ import Test from '../components/Test';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Hero = () => {
+const Home = () => {
 
     useEffect(() => {
         const tl = gsap.timeline({
@@ -52,4 +52,4 @@ const Hero = () => {
     )
 }
 
-export default Hero
+export default Home
