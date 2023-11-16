@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import heroImage from '../assets/hero.jpg';
+import Test from '../components/Test';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -46,7 +47,7 @@ const Hero = () => {
                 <div className='text-white font-extrabold text-6xl hero-text z-10'>CommuteConnect</div>
                 <div className='text-white font-bold text-xl z-10'>Navigate Commutes, Create Connections: Carpooling Simplified</div>
             </div>
-
+            <Test />
         </>
     )
 }

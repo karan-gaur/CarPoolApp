@@ -3,7 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import Navbar from './components/Navbar'
-import Hero from './components/Hero'
+import Hero from './pages/Hero'
 import Test from './components/Test'
 
 function App() {
@@ -12,8 +12,6 @@ function App() {
     <>
       <Navbar />
       <Hero />
-      <Test />
-      {/* <Test /> */}
     </>
   )
 }
