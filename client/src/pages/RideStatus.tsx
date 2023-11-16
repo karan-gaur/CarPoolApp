@@ -1,8 +1,12 @@
 import React from 'react'
+import Transition from '../components/Transition';
 
 const RideStatus = () => {
   return (
-    <div>RideStatus</div>
+    <>
+      <Transition />
+      <div>RideStatus</div>
+    </>
   )
 }
 

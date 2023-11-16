@@ -40,6 +40,7 @@ const Home = () => {
 
     return (
         <>
+            <Transition />
             <div className='h-screen mx-20 mt-20 flex flex-col justify-center items-center relative overflow-hidden max-sm:mx-0'>
                 <div className='absolute inset-0'>
                     <img src={heroImage} className='w-full h-full object-cover hero-image opacity-60' alt='Hero Background' />

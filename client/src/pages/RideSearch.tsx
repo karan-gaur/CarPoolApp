@@ -1,8 +1,12 @@
 import React from 'react'
+import Transition from '../components/Transition';
 
 const RideSearch = () => {
   return (
-    <div>RideSearch</div>
+    <>
+      <Transition />
+      <div>RideSearch</div>
+    </>
   )
 }
 

@@ -6,8 +6,8 @@ const Transition = () => {
     const transitionRef = useRef(null);
 
     useEffect(() => {
-        const tl = gsap.timeline();
-        tl.to(transitionRef.current, {
+        const timeline = gsap.timeline();
+        timeline.to(transitionRef.current, {
             duration: 4,
             x: '100%',
             ease: Power4.easeOut,
