@@ -1,22 +1,52 @@
-import React from 'react'
 import './Profile.css';
 import profileImage from '../assets/profileImage.jpg';
 import Transition from '../components/Transition';
 import ThreejsPlane from '../components/ImagePlane';
 import Button from '../components/Button';
+import { useEffect, useRef } from 'react';
+import { gsap, Power4 } from 'gsap';
 
 const Profile = () => {
 
+  const profileRef = useRef(null);
+  const profileImageRef = useRef(null);
+
+  useEffect(() => {
+    const profileElement = profileRef.current;
+    const profileImageElement = profileImageRef.current;
+
+    if (profileElement) {
+      const profile = gsap.timeline();
+      profile.from(profileElement, {
+        duration: 1,
+        y: '100%',
+        opacity: 0,
+        ease: Power4.easeOut,
+        delay: 1,
+      });
+    }
+
+    if (profileImageElement) {
+      const profile = gsap.timeline();
+      profile.from(profileImageElement, {
+        duration: 1,
+        y: '-100%',
+        opacity: 0,
+        ease: Power4.easeOut,
+        delay: 1,
+      });
+    }
+  }, []);
 
   return (
     <>
       <Transition />
       <div className='min-h-screen w-full flex flex-col items-center'>
         <ThreejsPlane />
-        <div className='w-full flex justify-center relative bg-transparent profile-header'>
+        <div ref={profileImageRef} className='w-full flex justify-center relative bg-transparent profile-header'>
           <img className='w-44 h-44 rounded-full absolute -bottom-20' src={profileImage}></img>
         </div>
-        <div className='pt-24 z-10'>
+        <div ref={profileRef} className='pt-24 z-10'>
           <div>@jd0912</div>
           <div className='text-4xl font-bold'>John Doe</div>
           <div className='text-lg'>5436768832 | jd0912@test.com</div>
