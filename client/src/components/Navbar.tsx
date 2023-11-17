@@ -1,6 +1,7 @@
 import React from 'react'
 import './Navbar.css';
 import { Link } from 'react-router-dom';
+import profileImage from '../assets/profileImage.jpg';
 
 interface NavItem {
     name: string,
@@ -43,7 +44,7 @@ const Navbar = () => {
                     alt="Your Company"
                 />
                 <div className="flex items-center mt-2 space-x-3">
-                    <img src="" alt="Profile Picture" className="relative w-8 h-8 rounded-full cursor-pointer" onClick={toggleProfileMenu} />
+                    <img src={profileImage} alt="Profile Picture" className="relative w-8 h-8 rounded-full cursor-pointer" onClick={toggleProfileMenu} />
                     {
                         profileMenu &&
                         <div className="absolute bg-yellow-500 text-left top-14 right-10 z-20 text-black rounded-md px-3 py-2 text-sm font-medium space-y-4" style={{ minWidth: '150px' }}>

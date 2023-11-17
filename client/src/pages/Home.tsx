@@ -32,7 +32,7 @@ const Home = () => {
                 start: 'top 40%',
                 end: 'bottom 60%',
                 scrub: 2,
-                markers: true,
+                // markers: true,
             },
         });
 
