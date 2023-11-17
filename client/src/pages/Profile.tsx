@@ -16,7 +16,7 @@ const Profile = () => {
         <div className='w-full flex justify-center relative bg-transparent profile-header'>
           <img className='w-44 h-44 rounded-full absolute -bottom-20' src={profileImage}></img>
         </div>
-        <div className='pt-24'>
+        <div className='pt-24 z-10'>
           <div>@jd0912</div>
           <div className='text-4xl font-bold'>John Doe</div>
           <div className='text-lg'>5436768832 | jd0912@test.com</div>
@@ -32,9 +32,6 @@ const Profile = () => {
               <div>Booked Rides</div>
             </div>
           </div>
-          {/* <div className='w-100 mt-4 text-xl bg-transparent border border-white cursor-pointer'>
-            My Rides
-          </div> */}
           <Button width='w-full' height='h-5' text='My Rides' onClick={() => console.log("Button Clicked")} />
         </div>
       </div>
