@@ -36,7 +36,7 @@ const Navbar = () => {
     }
 
     return (
-        <div className='w-full fixed flex flex-col z-10'>
+        <div className='w-full fixed flex flex-col z-20'>
             <div className='flex justify-between items-center px-5 pt-2'>
                 <img
                     className="h-12 max-sm:pl-3"
