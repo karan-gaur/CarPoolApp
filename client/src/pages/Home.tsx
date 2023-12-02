@@ -25,17 +25,19 @@ const Home = () => {
             fontSize: '2rem',
         });
 
-        gsap.to('.hero-image', {
-            scale: 1.5,
-            scrollTrigger: {
-                trigger: '.hero-image',
-                start: 'top 40%',
-                end: 'bottom 60%',
-                scrub: 2,
-                // markers: true,
-            },
+        gsap.delayedCall(1, function() {
+            gsap.to('.hero-image', {
+                scale: 1.2,
+                scrollTrigger: {
+                    trigger: '.hero-image',
+                    start: 'top 20%',
+                    end: 'bottom 60%',
+                    scrub: 2,
+                    // markers: true,
+                },
+            });
         });
-
+        
     }, []);
 
     return (
