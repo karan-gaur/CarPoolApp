@@ -1,7 +1,7 @@
 import Transition from '../components/Transition';
 import Buttton from '../components/Button';
 import usePlacesAutocomplete from 'use-places-autocomplete';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import MapComponent from '../components/MapComponent';
 import { getCoordinatesFromAddress1, getCoordinatesFromAddress2 } from '../services/googleApiService';
 import './RideSearch.css';
@@ -221,4 +221,4 @@ const RideSearch = () => {
   )
 }
 
-export default RideSearch
+export default RideSearch;
