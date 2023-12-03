@@ -13,6 +13,7 @@
     "@react-google-maps/api": "^2.19.2",
     "@react-three/drei": "^9.88.16",
     "@react-three/fiber": "^8.15.11",
+    "@types/axios": "^0.14.0",
     "@types/google-map-react": "^2.1.10",
     "gsap": "^3.12.2",
     "lottie-react": "^2.4.0",
