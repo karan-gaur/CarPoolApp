@@ -1,7 +1,7 @@
 import Transition from '../components/Transition';
 import Buttton from '../components/Button';
 import usePlacesAutocomplete from 'use-places-autocomplete';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import MapComponent from '../components/MapComponent';
 import { getCoordinatesFromAddress1, getCoordinatesFromAddress2 } from '../services/googleApiService';
 import './RideSearch.css';
@@ -110,6 +110,36 @@ const RideSearch = () => {
       console.error('Error fetching place details:', error);
     }
   };
+
+  const profileRef = useRef(null);
+  const profileImageRef = useRef(null);
+
+  useEffect(() => {
+    const profileElement = profileRef.current;
+    const profileImageElement = profileImageRef.current;
+
+    if (profileElement) {
+      const profile = gsap.timeline();
+      profile.from(profileElement, {
+        duration: 1,
+        y: '100%',
+        opacity: 0,
+        ease: Power4.easeOut,
+        delay: 1,
+      });
+    }
+
+    if (profileImageElement) {
+      const profile = gsap.timeline();
+      profile.from(profileImageElement, {
+        duration: 1,
+        y: '-100%',
+        opacity: 0,
+        ease: Power4.easeOut,
+        delay: 1,
+      });
+    }
+  }, []);
 
   return (
     <>
