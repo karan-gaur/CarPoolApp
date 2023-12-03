@@ -114,7 +114,7 @@ const RideSearch = () => {
   return (
     <>
       <Transition />
-      <div className='min-h-screen absolute z-10 w-screen flex flex-col items-center'>
+      <div className='min-h-screen bg-black absolute z-10 w-screen flex flex-col items-center'>
         <div className='flex flex-col w-full'>
           <MapComponent srcLat={srcCor.lat} srcLng={srcCor.lng} destLat={destCor.lat} destLng={destCor.lng} />
           <form className='mt-10 px-52 max-md:px-20'>
