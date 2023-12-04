@@ -60,6 +60,9 @@ module.exports = {
     ACCESS_TOKEN_SECRET_KEY: process.env.JWT_KEY,
     ACCESS_TOKEN_EXPIRY: process.env.JWT_EXPIRY,
 
+    // Google Maps Api Key
+    GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
+
     // Database & Password config
     passwordSalt: parseInt(process.env.BCRYPT_PASS_SALT),
     client,

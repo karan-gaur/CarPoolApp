@@ -4,6 +4,7 @@ var cookieParser = require("cookie-parser");
 var { transports } = require("winston");
 var expressWinston = require("express-winston");
 
+var userRouter = require("./routes/user");
 var ridesRouter = require("./routes/ride");
 var indexRouter = require("./routes/index");
 
@@ -15,6 +16,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
+app.use("/", userRouter);
 app.use("/ride", ridesRouter);
 
 module.exports = app;

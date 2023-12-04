@@ -7,6 +7,7 @@ CREATE TABLE USERS(
     phone_number VARCHAR(13),
     username VARCHAR(50),
     password VARCHAR(200),
+    admin BOOLEAN DEFAULT FALSE,
     image_addr VARCHAR(100),
     driver_rating NUMERIC(2, 1) DEFAULT 5.0,
     user_rating NUMERIC(2, 1) DEFAULT 5.0
@@ -20,6 +21,7 @@ CREATE TABLE ADDRESS(
     state VARCHAR(20),
     zip_code INT,
     country VARCHAR(50),
+    place_id VARCHAR(100),
     coordinates GEOGRAPHY(POINT, 4326)
 );
 
