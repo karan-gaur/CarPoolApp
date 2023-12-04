@@ -1,0 +1,103 @@
+.box {
+    background-color: rgba(28, 36, 50, 1.5);
+    transition: transform 1s ease 0s;
+    border-radius: 4px;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+        box-shadow:
+            rgb(0, 204, 255, 0.5) 0px 0px 0px 1px,
+            rgba(0, 204, 255, 0.5) 0px 1px 0px 0px,
+            rgba(0, 204, 255, 0.5) 0px 0px 8px 0px,
+            rgba(0, 204, 255, 0.5) 0px 20px 30px 0px;
+
+        transform: scale3d(1.02, 1.02, 1.02);
+    }
+}
+
+.ride-list {
+    list-style-type: none;
+}
+
+.ride-list-item-1 {
+    position: relative;
+    margin: 0;
+    padding-bottom: 1em;
+    padding-left: 20px;
+}
+
+.ride-list-item-2 {
+    position: relative;
+    margin: 0;
+    padding-bottom: 1em;
+    padding-left: 20px;
+}
+
+.ride-list-item-1:before {
+    top: 10px;
+    background-color: white;
+    width: 0.2rem;
+    content: '';
+    position: absolute;
+    bottom: 0px;
+    left: 8px;
+    height: 4.6rem;
+}
+
+.bullet {
+    width: 12px;
+    fill: white;
+    float: left;
+    padding-right: 10px
+}
+
+.bullet.big {
+    width: 2rem;
+    margin-left: -22px;
+    padding-right: 8px
+}
+
+.rate {
+    float: left;
+    height: 46px;
+    padding: 0 10px;
+}
+
+.rate:not(:checked)>input {
+    position: absolute;
+    top: -9999px;
+}
+
+.rate:not(:checked)>label {
+    float: right;
+    width: 1em;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 30px;
+    color: #ccc;
+}
+
+.rate:not(:checked)>label:before {
+    content: '★ ';
+}
+
+.rate>input:checked~label {
+    color: #ffc700;
+}
+
+.rate:not(:checked)>label:hover,
+.rate:not(:checked)>label:hover~label {
+    color: #deb217;
+}
+
+.rate>input:checked+label:hover,
+.rate>input:checked+label:hover~label,
+.rate>input:checked~label:hover,
+.rate>input:checked~label:hover~label,
+.rate>label:hover~input:checked~label {
+    color: #c59b08;
+}
+
+/* Modified from: https://github.com/mukulkant/Star-rating-using-pure-css */

@@ -3,6 +3,7 @@ import Profile from './pages/Profile';
 import RidePublish from './pages/RidePublish';
 import RideSearch from './pages/RideSearch';
 import RideStatus from './pages/RideStatus';
+import Rides from './pages/Rides';
 
 export const publicRoutes = [
     {
@@ -32,5 +33,9 @@ export const publicRoutes = [
     {
         path: '/ride-status',
         element: <RideStatus />
+    },
+    {
+        path: '/rides',
+        element: <Rides />
     }
 ];
