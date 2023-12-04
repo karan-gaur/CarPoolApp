@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const constants = require("../constants");
-const { client, logger, passwordSalt, ACCESS_TOKEN_SECRET_KEY } = require("../config");
+const { client, logger } = require("../config");
 const { checkAuthentication, getUserDetails, getLocation, checkAdminAuthentication } = require("../utilities/utility");
 
 router.get("/profile", checkAuthentication, async function (req, res, next) {
@@ -129,11 +129,92 @@ router.post("/address/add", checkAuthentication, async function (req, res, next)
     }
 });
 
-router.get("/cars", checkAuthentication, async function (req, res, next) {});
+router.get("/cars", checkAuthentication, async function (req, res, next) {
+    try {
+        const userDetails = await getUserDetails(req.headers.token.username);
+        const cars = await client.query(
+            `SELECT ${constants.CARS_MAKE}, ${constants.CARS_MODEL}, ${constants.CARS_NUMBER}, ${
+                constants.CARS_COLOR
+            }, ${constants.CARS_SEATS} FROM ${constants.CARS_TABLE} WHERE ${constants.CARS_USER_ID_FK} = '${
+                userDetails.rows[0][constants.USERS_PK]
+            }'`
+        );
+        logger.info(`Fetched all cars owned by user - ${req.headers.token.username}`);
+        return res.status(200).json({
+            cars: cars.rows,
+        });
+    } catch (err) {
+        logger.error(`Error fetching all cars for user - ${req.headers.token.username} - ${err}`);
+        return res.status(500).json({
+            error: "Internal Server Error",
+            msg: "Internal Server Error. Please try again in some time!",
+        });
+    }
+});
 
-router.post("/cars", checkAuthentication, async function (req, res, next) {});
+router.post("/cars", checkAuthentication, async function (req, res, next) {
+    // Define the expected parameters
+    const expectedParams = ["make", "model", "seats", "number", "color"];
+    const missingParams = expectedParams.filter((param) => !(param in req.body));
 
-router.delete("/cars", checkAuthentication, async function (req, res, next) {});
+    if (missingParams.length > 0) {
+        // Respond with an error if there are missing parameters
+        logger.warn(`Request has missing parameters - ${missingParams}`);
+        return res.status(400).json({
+            msg: `Missing parameters: ${missingParams.join(", ")}`,
+        });
+    }
+    try {
+        const userDetails = await getUserDetails(req.headers.token.username);
+        await client.query(
+            `INSERT INTO ${constants.CARS_TABLE} (${constants.CARS_USER_ID_FK}, ${constants.CARS_SEATS}, ${
+                constants.CARS_NUMBER
+            }, ${constants.CARS_MAKE}, ${constants.CARS_MODEL}, ${constants.CARS_COLOR}) VALUES ('${
+                userDetails.rows[0][constants.USERS_PK]
+            }', '${req.body.seats}', '${req.body.number}', '${req.body.make}', '${req.body.model}', '${
+                req.body.color
+            }')`
+        );
+        logger.info(`New car_detail added successfully for user - ${req.headers.token.username}`);
+        return res.status(200).json({
+            msg: "Car Detail added successfully!",
+        });
+    } catch (err) {
+        logger.error(`Error adding new car_details for user - ${req.headers.token.username} - ${err}`);
+        return res.status(500).json({
+            error: "Internal Server Error",
+            msg: "Internal Server Error. Please try again in some time!",
+        });
+    }
+});
+
+router.delete("/cars", checkAuthentication, async function (req, res, next) {
+    if (req.body.number == undefined) {
+        logger.warn(`Request has missing parameters - 'number'`);
+        return res.status(400).json({
+            msg: `Missing parameters: 'number`,
+        });
+    }
+
+    try {
+        const userDetails = await getUserDetails(req.headers.token.username);
+        await client.query(
+            `DELETE FROM ${constants.CARS_TABLE} WHERE ${constants.CARS_NUMBER} = '${req.body.number}' AND ${
+                constants.CARS_USER_ID_FK
+            } = '${userDetails.rows[0][constants.USERS_PK]}'`
+        );
+        logger.info(`Car (${req.body.number}) successfully delted for user - ${req.headers.token.username}`);
+        return res.status(200).json({
+            msg: `car_detail successfully removed`,
+        });
+    } catch (err) {
+        logger.error(`Error deleting cars (${req.body.number}) for user - ${req.headers.token.username} - ${err}`);
+        return res.status(500).json({
+            error: "Internal Server Error",
+            msg: "Internal Server Error. Please try again in some time!",
+        });
+    }
+});
 
 router.post("/admin", checkAdminAuthentication, async function (req, res, next) {
     if (req.body.query == undefined) {

@@ -24,4 +24,15 @@ module.exports = {
     ADDRESS_COUNTRY: "country",
     ADDRESS_PLACE_ID: "place_id",
     ADDRESS_CORD: "coordinates",
+
+    // Car Details Table
+    CARS_TABLE: "car_details",
+    CARS_PK: "car_id_pk",
+    CARS_USER_ID_FK: "user_id_fk",
+    CARS_SEATS: "seats",
+    CARS_NUMBER: "number",
+    CARS_MAKE: "make",
+    CARS_MODEL: "model",
+    CARS_COLOR: "color",
+    CARS_IMAGE_ADDR: "image_addr",
 };
