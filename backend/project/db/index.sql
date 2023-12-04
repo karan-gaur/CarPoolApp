@@ -20,6 +20,7 @@ CREATE TABLE ADDRESS(
     state VARCHAR(20),
     zip_code INT,
     country VARCHAR(50),
+    place_id VARCHAR(100),
     coordinates GEOGRAPHY(POINT, 4326)
 );
 

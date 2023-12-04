@@ -1,7 +1,8 @@
 var jwt = require("jsonwebtoken");
+var axios = require("axios");
 
 const constants = require("../constants");
-const { ps, logger, ACCESS_TOKEN_SECRET_KEY, client } = require("../config");
+const { ACCESS_TOKEN_SECRET_KEY, GOOGLE_API_KEY, client, logger } = require("../config");
 
 function checkAuthentication(req, res, next) {
     if (typeof req.headers["authorization"] !== "undefined") {
@@ -36,7 +37,19 @@ async function getUserDetails(username) {
     }
 }
 
+async function getLocation(place_id) {
+    const response = await axios.get(`https://maps.googleapis.com/maps/api/place/details/json`, {
+        params: {
+            place_id: place_id,
+            key: GOOGLE_API_KEY,
+        },
+    });
+    console.log(response.data.result.geometry.location);
+    return response.data.result.geometry.location;
+}
+
 module.exports = {
     checkAuthentication,
     getUserDetails,
+    getLocation,
 };

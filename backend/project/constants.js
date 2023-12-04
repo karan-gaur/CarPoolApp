@@ -14,11 +14,13 @@ module.exports = {
 
     // Address Table
     ADDRESS_TABLE: "address",
+    ADDRESS_PK: "address_pk",
     ADDRESS_USER_ID_FK: "user_id_fk",
     ADDRESS_APT_NUMBER: "apt_number",
     ADDRESS_STREET_NAME: "street_name",
     ADDRESS_STATE: "state",
     ADDRESS_ZIP_CODE: "zip_code",
     ADDRESS_COUNTRY: "country",
+    ADDRESS_PLACE_ID: "place_id",
     ADDRESS_CORD: "coordinates",
 };
