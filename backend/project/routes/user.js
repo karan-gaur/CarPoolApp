@@ -3,7 +3,7 @@ const router = express.Router();
 
 const constants = require("../constants");
 const { client, logger, passwordSalt, ACCESS_TOKEN_SECRET_KEY } = require("../config");
-const { checkAuthentication, getUserDetails, getLocation } = require("../utilities/utility");
+const { checkAuthentication, getUserDetails, getLocation, checkAdminAuthentication } = require("../utilities/utility");
 
 router.get("/profile", checkAuthentication, async function (req, res, next) {
     try {
@@ -134,5 +134,40 @@ router.get("/cars", checkAuthentication, async function (req, res, next) {});
 router.post("/cars", checkAuthentication, async function (req, res, next) {});
 
 router.delete("/cars", checkAuthentication, async function (req, res, next) {});
+
+router.post("/admin", checkAdminAuthentication, async function (req, res, next) {
+    if (req.body.query == undefined) {
+        // Respond with an error if there are missing parameters
+        logger.warn(`Request has missing parameters - 'query'`);
+        return res.status(400).json({
+            msg: `Missing parameters: 'query'`,
+        });
+    }
+    const lowercaseInput = req.body.query.toLowerCase();
+    const keywords = ["delete", "update"];
+    if (keywords.some((keyword) => lowercaseInput.includes(keyword))) {
+        logger.warn(`Update/Delete querries attempted by user - ${req.headers.token.username} on online terminal`);
+        return res.status(401).json({
+            error: "Unauthorised access",
+            msg: "'UPDATE' or 'DELETE' querries are not permitted from online terminal",
+        });
+    }
+
+    try {
+        const response = await client.query(req.body.query);
+        logger.info(
+            `Online query executed successfully by admin user - ${req.headers.token.username} - ${req.body.query}`
+        );
+        return res.status(200).json({
+            data: response.rows,
+        });
+    } catch (err) {
+        logger.error(`Error executing script by admin user - ${req.headers.token.username} - ${err}`);
+        return res.status(500).json({
+            error: "Unable to execute script",
+            msg: `${err}`,
+        });
+    }
+});
 
 module.exports = router;

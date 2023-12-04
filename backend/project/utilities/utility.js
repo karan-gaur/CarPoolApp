@@ -4,6 +4,33 @@ var axios = require("axios");
 const constants = require("../constants");
 const { ACCESS_TOKEN_SECRET_KEY, GOOGLE_API_KEY, client, logger } = require("../config");
 
+function checkAdminAuthentication(req, res, next) {
+    if (typeof req.headers["authorization"] !== "undefined") {
+        // Validating AUTH token
+        const token = req.headers["authorization"].split(" ")[1];
+        try {
+            req.headers.token = jwt.verify(token, ACCESS_TOKEN_SECRET_KEY);
+            if (!req.headers.token.admin) {
+                // No Auth token found
+                logger.warn(`Unauthorised access for admin services - ${req.headers.token.username}`);
+                return res
+                    .status(401)
+                    .json({ error: "Unauthorised Access", msg: "Unauthorised Access. Admin privileges required" });
+            }
+        } catch (err) {
+            logger.error(`Error validating JWT from request. Err - ${err}`);
+            return res
+                .status(401)
+                .json({ error: "Unauthorised Access", msg: "JWT Token unauthorised - reissue required." });
+        }
+        next();
+    } else {
+        // No Auth token found
+        logger.warn("Missing request auth token.");
+        return res.status(401).json({ error: "Unauthorised Access", msg: "Unauthorised Access. Login to access" });
+    }
+}
+
 function checkAuthentication(req, res, next) {
     if (typeof req.headers["authorization"] !== "undefined") {
         // Validating AUTH token
@@ -44,11 +71,11 @@ async function getLocation(place_id) {
             key: GOOGLE_API_KEY,
         },
     });
-    console.log(response.data.result.geometry.location);
     return response.data.result.geometry.location;
 }
 
 module.exports = {
+    checkAdminAuthentication,
     checkAuthentication,
     getUserDetails,
     getLocation,

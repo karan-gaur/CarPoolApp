@@ -9,6 +9,7 @@ module.exports = {
     USERS_PHONE_NUMBER: "phone_number",
     USERS_USERNAME: "username",
     USERS_PASSWORD: "password",
+    USERS_ADMIN: "admin",
     USERS_DRIVER_R: "driver_rating",
     USERS_USER_R: "user_rating",
 

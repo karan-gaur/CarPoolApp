@@ -40,6 +40,7 @@ router.post("/login", async function (req, res, next) {
                         first_name: userDetails.rows[0][constants.USERS_FIRST_NAME],
                         last_name: userDetails.rows[0][constants.USERS_LAST_NAME],
                         username: userDetails.rows[0][constants.USERS_USERNAME],
+                        admin: userDetails.rows[0][constants.USERS_ADMIN],
                     },
                     ACCESS_TOKEN_SECRET_KEY
                 ),
@@ -90,7 +91,7 @@ router.post("/register", async function (req, res, next) {
         client.query(
             `INSERT INTO ${constants.USERS_TABLE}(${constants.USERS_FIRST_NAME}, ${constants.USERS_LAST_NAME}, ${constants.USERS_PHONE_NUMBER}, ${constants.USERS_USERNAME}, ${constants.USERS_PASSWORD}) VALUES ('${req.body.first_name}', '${req.body.last_name}', '${req.body.phone_number}','${req.body.username}', '${hash}' )`
         );
-        logger.info(`New user creaeted - ${req.body.username}`);
+        logger.info(`New user created - ${req.body.username}`);
         return res.status(200).json({
             msg: "User created.",
         });
