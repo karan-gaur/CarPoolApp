@@ -98,9 +98,7 @@ const Login = () => {
                   required
         />
 
-        <button width='w-full' height='h-5' text='Login' onClick={handleLogin} style={styles.button}>
-          Login
-        </button>
+        <Button width='w-full' height='h-5' text='Login' onClick={handleLogin}></Button>
       </div>
     </div>
     </section>

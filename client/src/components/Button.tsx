@@ -4,7 +4,7 @@ interface ButtonProps {
     width?: string;
     height?: string;
     text: string;
-    onClick: () => void;
+    onClick: (e?: any) => void;
 }
 
 const Button: React.FC<ButtonProps> = ({ width='w-full' , height, text, onClick }) => {

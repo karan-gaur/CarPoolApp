@@ -13,7 +13,7 @@ export const getCoordinatesFromAddress1 = (place_id: string) => {
 
         // const data = response.data;
         // return data.result.geometry.location;
-
+        console.log('place_id', place_id);
         return {
             "lat": 40.7604095,
             "lng": -73.9870026
