@@ -156,7 +156,7 @@ const RideSearch = () => {
                   value={valueFrom} 
                   onChange={e => setValueFrom(e.target.value)} 
                   id="source" 
-                  className="input-container border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
+                  className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
                   placeholder="271 Van Wagenene Ave, Jersey City" 
                   required 
                 />
@@ -169,7 +169,7 @@ const RideSearch = () => {
                   value={valueTo} 
                   onChange={e => setValueTo(e.target.value)} 
                   id="destination" 
-                  className="input-container border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
+                  className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
                   placeholder="NJIT Campus Center" 
                   required 
                 />
@@ -187,7 +187,7 @@ const RideSearch = () => {
                   )}
                   type="text" 
                   id="seats" 
-                  className="input-container border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
+                  className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
                   placeholder="No of Seats" 
                   required 
                 />
@@ -204,7 +204,7 @@ const RideSearch = () => {
                   }
                   type="text"
                   id="date"
-                  className="input-container border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   placeholder="mm-dd-yyyy"
                   required
                 />

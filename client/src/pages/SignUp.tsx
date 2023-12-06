@@ -1,6 +1,10 @@
 import { useState, FormEvent, ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import signupImg from "../assets/carpool-graphic1.png";
+import Transition from "../components/Transition";
+import ThreejsPlane from "../components/ImagePlane";
+import Button from "../components/Button";
+import SignupAnimation from "../components/SignupAnimation";
 
 const SignUp = () => {
   const BASE_URL = "";
@@ -51,13 +55,17 @@ const SignUp = () => {
 
   return (
     <section className="px-5 xl:px-0  h-screen w-screen flex items-center justify-center">
-      <div className="max-w-[1170px] mx-auto ">
+      <Transition />
+      <ThreejsPlane />
+
+      <div className="max-w-[1170px] mx-auto z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 ">
           {/* ============ img box ========= */}
-          <div className="lg:block bg-[#0067FF] rounded-l-lg w-full h-full">
-            <figure className="rounded-l-lg w-full h-full">
+          <div className="w-full h-full">
+            {/* <figure className="rounded-l-lg w-full h-full">
               <img className="w-full h-full rounded-l-lg object-cover" src={signupImg} alt="" />
-            </figure>
+            </figure> */}
+            <SignupAnimation />
           </div>
   
           <div className="rounded-l-lg  lg:pl-16 py-10">
@@ -72,7 +80,7 @@ const SignUp = () => {
                   value={formData.first_name}
                   onChange={handleInputChange}
                   placeholder="First Name"
-                  className="input-container border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   required
                 />
               </div>
@@ -83,7 +91,7 @@ const SignUp = () => {
                   value={formData.last_name}
                   onChange={handleInputChange}
                   placeholder="Last Name"
-                  className="input-container border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   required
                 />
               </div>
@@ -94,7 +102,7 @@ const SignUp = () => {
                   value={formData.phone_number}
                   onChange={handleInputChange}
                   placeholder="PhoneNumber"
-                  className="input-container border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   required
                 />
               </div>
@@ -106,7 +114,7 @@ const SignUp = () => {
                   value={formData.username}
                   onChange={handleInputChange}
                   placeholder="Email"
-                  className="input-container border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   required
                 />
               </div>
@@ -118,14 +126,16 @@ const SignUp = () => {
                   onChange={handleInputChange}
                   name="password"
                   placeholder="Password"
-                  className="input-container border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   required
                 />
               </div>
               
   
               <div className="mt-7">
-                <button
+                <Button width='w-full' height='h-5' text='Sign Up' onClick={()=>console.log("Button Clicked")}></Button>
+
+                {/* <button
                   type="submit"
                   disabled={loading && true}
                   className="w-full bg-[#0067FF] text-white py-3 px-4 rounded-lg text-[18px] leading-[30px]"
@@ -133,7 +143,7 @@ const SignUp = () => {
                 >
                  
                   Sign Up
-                </button>
+                </button> */}
               </div>
   
               <p className="mt-5 text-textColor text-center">

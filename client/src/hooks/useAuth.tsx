@@ -1,12 +1,5 @@
 import { useContext } from "react";
-import { AuthAction, AuthContext } from "../context/AuthContext";
-
-interface AuthContextProps {
-    user: null | { id: number; name: string }; // Adjust the user type accordingly
-    token: string;
-    isAuthenticated: boolean;
-    dispatch: React.Dispatch<AuthAction>;
-}
+import { AuthContext, AuthContextProps } from "../context/AuthContext";
 
 export const useAuth = (): AuthContextProps => {
     const context = useContext(AuthContext);
