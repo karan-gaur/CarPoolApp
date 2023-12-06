@@ -55,7 +55,7 @@ router.post("/profile", checkAuthentication, async function (req, res, next) {
 router.get("/address", checkAuthentication, async function (req, res, next) {
     try {
         const address = await client.query(
-            `SELECT ${constants.ADDRESS_APT_NUMBER}, ${constants.ADDRESS_STREET_NAME}, ${constants.ADDRESS_STATE}, ${constants.ADDRESS_ZIP_CODE}, ${constants.ADDRESS_COUNTRY}, ${constants.ADDRESS_PLACE_ID}, ST_X(${constants.ADDRESS_CORD}::geometry) AS latitude, ST_Y(${constants.ADDRESS_CORD}::geometry) as longitude from ${constants.ADDRESS_TABLE} where ${constants.ADDRESS_USER_ID_FK} = (SELECT ${constants.USERS_PK} FROM ${constants.USERS_TABLE} where ${constants.USERS_USERNAME} = '${req.headers.token.username}')`
+            `SELECT ${constants.ADDRESS_PLACE_ID_PK}, ${constants.ADDRESS_APT_NUMBER}, ${constants.ADDRESS_STREET_NAME}, ${constants.ADDRESS_STATE}, ${constants.ADDRESS_ZIP_CODE}, ${constants.ADDRESS_COUNTRY}, ST_X(${constants.ADDRESS_CORD}::geometry) AS latitude, ST_Y(${constants.ADDRESS_CORD}::geometry) as longitude from ${constants.ADDRESS_TABLE} where ${constants.ADDRESS_USER_ID_FK} = (SELECT ${constants.USERS_PK} FROM ${constants.USERS_TABLE} where ${constants.USERS_USERNAME} = '${req.headers.token.username}')`
         );
         logger.info(`Fetched all addresses for user - ${req.headers.token.username}`);
         return res.status(200).json({ address: address.rows });
@@ -72,11 +72,9 @@ router.delete("/address", checkAuthentication, async function (req, res, next) {
     try {
         userDetails = await getUserDetails(req.headers.token.username);
         await client.query(
-            `DELETE FROM ${constants.ADDRESS_TABLE} WHERE ${constants.ADDRESS_PK} IN (SELECT ${
-                constants.ADDRESS_PK
-            } FROM ${constants.ADDRESS_TABLE} WHERE ${constants.ADDRESS_PLACE_ID} = '${req.body.place_id}' AND ${
-                constants.ADDRESS_USER_ID_FK
-            } = '${userDetails.rows[0][constants.USERS_PK]}' LIMIT 1)`
+            `DELETE FROM ${constants.ADDRESS_TABLE} WHERE ${constants.ADDRESS_PLACE_ID_PK} = '${
+                req.body.place_id
+            }' AND ${constants.ADDRESS_USER_ID_FK} = '${userDetails.rows[0][constants.USERS_PK]}'`
         );
         logger.info(`Deleted mentioned address for user - ${req.headers.token.username}`);
         return res.status(200).json({ msg: `Address Deleted` });
@@ -105,17 +103,24 @@ router.post("/address/add", checkAuthentication, async function (req, res, next)
         const location = await getLocation(req.body.place_id);
         const userDetails = await getUserDetails(req.headers.token.username);
 
-        await client.query(
-            `INSERT INTO ADDRESS(${constants.ADDRESS_USER_ID_FK}, ${constants.ADDRESS_APT_NUMBER}, ${
-                constants.ADDRESS_STREET_NAME
-            }, ${constants.ADDRESS_STATE}, ${constants.ADDRESS_ZIP_CODE}, ${constants.ADDRESS_COUNTRY}, ${
-                constants.ADDRESS_PLACE_ID
-            }, ${constants.ADDRESS_CORD}) VALUES (${userDetails.rows[0][constants.USERS_PK]}, '${
-                req.body.apt_number
-            }', '${req.body.street_name}', '${req.body.state}', '${req.body.zip_code}', '${req.body.country}', '${
-                req.body.place_id
-            }',ST_GeographyFromText('POINT(${location.lat} ${location.lng})'))`
+        // Checking if address exists
+        const duplicateCheck = await client.query(
+            `SELECT * FROM ${constants.ADDRESS_TABLE} WHERE ${constants.ADDRESS_PLACE_ID_PK} = '${req.body.place_id}'`
         );
+
+        if (duplicateCheck.rows.length == 0) {
+            await client.query(
+                `INSERT INTO ADDRESS(${constants.ADDRESS_PLACE_ID_PK}, ${constants.ADDRESS_USER_ID_FK}, ${
+                    constants.ADDRESS_APT_NUMBER
+                }, ${constants.ADDRESS_STREET_NAME}, ${constants.ADDRESS_STATE}, ${constants.ADDRESS_ZIP_CODE}, ${
+                    constants.ADDRESS_COUNTRY
+                }, ${constants.ADDRESS_CORD}) VALUES ('${req.body.place_id}', ${
+                    userDetails.rows[0][constants.USERS_PK]
+                }, '${req.body.apt_number}', '${req.body.street_name}', '${req.body.state}', '${req.body.zip_code}', '${
+                    req.body.country
+                }', ST_GeographyFromText('POINT(${location.lat} ${location.lng})'))`
+            );
+        }
         logger.info(`Address added successfully for user ${req.headers.token.username}`);
         return res.status(200).json({
             msg: "Address added successfully",
