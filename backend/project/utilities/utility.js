@@ -74,9 +74,34 @@ async function getLocation(place_id) {
     return response.data.result.geometry.location;
 }
 
+async function getCarDetails(user_id, number) {
+    try {
+        const carDetails = await client.query(
+            `SELECT * FROM ${constants.CARS_TABLE} WHERE ${constants.CARS_NUMBER} = '${number}' AND ${constants.CARS_USER_ID_FK} = ${user_id}`
+        );
+        logger.info(`Car Details query executed for user_id '${user_id}' - ('${number}')`);
+        return carDetails;
+    } catch (err) {
+        logger.error(`Error fetching cardeetails for user_id - '${user_id} - ${err}`);
+        throw err;
+    }
+}
+
+async function getAddress(place_id) {
+    const response = await axios.get(`https://maps.googleapis.com/maps/api/place/details/json`, {
+        params: {
+            place_id: place_id,
+            key: GOOGLE_API_KEY,
+        },
+    });
+    return response.data.result.formatted_address;
+}
+
 module.exports = {
     checkAdminAuthentication,
     checkAuthentication,
     getUserDetails,
+    getCarDetails,
     getLocation,
+    getAddress,
 };
