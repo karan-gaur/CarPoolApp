@@ -6,6 +6,7 @@ import RideSearch from './pages/RideSearch';
 import RideStatus from './pages/RideStatus';
 import Rides from './pages/Rides';
 import SignUp from './pages/SignUp';
+import RideDetail from './pages/RideDetail';
 
 export const publicRoutes = [
     {
@@ -39,5 +40,9 @@ export const publicRoutes = [
     {
         path: '/rides',
         element: <Rides />
+    },
+    {
+        path: '/rides/:id',
+        element: <RideDetail />
     }
 ];
