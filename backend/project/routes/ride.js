@@ -20,8 +20,76 @@ router.post("/details", checkAuthentication, async function (req, res, next) {
     const client = await pool.connect();
     try {
         const userDetails = await getUserDetails(req.headers.token.username);
-        await client.query(``);
+        const rideDetails = await client.query(
+            `SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_PK} = ${req.body.ride_id}`
+        );
+
+        if (rideDetails.rows.length == 0) {
+            logger.info(`No sucj r`);
+            return;
+        }
+
+        const carDetails = await client.query(
+            `SELECT ${constants.CARS_SEATS}, ${constants.CARS_NUMBER}, ${constants.CARS_MAKE}, ${
+                constants.CARS_MODEL
+            }, ${constants.CARS_COLOR} FROM ${constants.CARS_TABLE} WHERE ${constants.CARS_PK} = ${
+                rideDetails.rows[0][constants.RIDE_CAR_ID_FK]
+            }`
+        );
+        const driverDetails = await client.query(
+            `SELECT ${constants.USERS_FIRST_NAME}, ${constants.USERS_LAST_NAME}, ${constants.USERS_DRIVER_R}, ${
+                constants.USERS_PHONE_NUMBER
+            } FROM ${constants.USERS_TABLE} WHERE ${constants.USERS_PK} = ${
+                rideDetails.rows[0][constants.RIDE_DRIVER_IF_FK]
+            }`
+        );
+        var userRideDetails;
+        var is_driver = false;
+        if (rideDetails.rows[0][constants.RIDE_DRIVER_IF_FK] == userDetails.rows[0][constants.USERS_PK]) {
+            // User is driver and needs all informations about the ride
+            is_driver = true;
+            userRideDetails = await client.query(
+                `SELECT ${constants.RIDE_D_RID_FK}, ${constants.RIDE_D_USERNAME}, ${constants.RIDE_D_RIDE_COMPLETED}, ${constants.RIDE_SOURCE_ID}, ${constants.RIDE_DEST_ID}, ST_X(${constants.RIDE_D_SOURCE}::geometry) AS source_latitude, ST_Y(${constants.RIDE_D_SOURCE}::geometry) as source_longitude, ST_X(${constants.RIDE_D_DEST}::geometry) AS dest_latitude, ST_Y(${constants.RIDE_D_DEST}::geometry) as dest_longitude, ${constants.RIDE_D_START_TIME}, ${constants.RIDE_D_END_TIME}, ${constants.RIDE_D_CRATE}, ${constants.RIDE_D_CREVIEW} FROM ${constants.RIDE_D_TABLE} WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id}`
+            );
+        } else {
+            // User is a customer and only user's ride information will be shared
+            userRideDetails = await client.query(
+                `SELECT ${constants.RIDE_D_RID_FK}, ${constants.RIDE_D_RIDE_COMPLETED}, ${constants.RIDE_SOURCE_ID}, ${
+                    constants.RIDE_DEST_ID
+                }, ST_X(${constants.RIDE_D_SOURCE}::geometry) AS source_latitude, ST_Y(${
+                    constants.RIDE_D_SOURCE
+                }::geometry) as source_longitude, ST_X(${constants.RIDE_D_DEST}::geometry) AS dest_latitude, ST_Y(${
+                    constants.RIDE_D_DEST
+                }::geometry) as dest_longitude, ${constants.RIDE_D_START_TIME}, ${constants.RIDE_D_END_TIME}, ${
+                    constants.RIDE_D_DRATE
+                }, ${constants.RIDE_D_DREVIEW} FROM ${constants.RIDE_D_TABLE} WHERE ${constants.RIDE_D_RID_FK} = ${
+                    req.body.ride_id
+                } AND ${constants.RIDE_D_UID_FK} = ${userDetails.rows[0][constants.USERS_PK]}`
+            );
+        }
+        for (i = 0; i < userRideDetails.rows.length; i++) {
+            if (userRideDetails.rows[i][constants.RIDE_D_SOURCE_ID] !== undefined)
+                userRideDetails.rows[i][constants.RIDE_D_SOURCE_ID] = await getAddress(
+                    userRideDetails.rows[i][constants.RIDE_D_SOURCE_ID]
+                );
+
+            if (userRideDetails.rows[i][constants.RIDE_D_DEST_ID] !== undefined)
+                userRideDetails.rows[i][constants.RIDE_D_DEST_ID] = await getAddress(
+                    userRideDetails.rows[i][constants.RIDE_D_DEST_ID]
+                );
+        }
+        logger.info(
+            `Fetched userInformation for rideID - '${req.body.ride_id}' for user - '${req.headers.token.username}'`
+        );
+
+        return res.status(200).json({
+            is_driver,
+            driverDetails: driverDetails.rows,
+            carDetails: carDetails.rows,
+            userDetails: userRideDetails.rows,
+        });
     } catch (err) {
+        logger.error(`Error - ${err}`);
     } finally {
         client.release();
     }
@@ -99,9 +167,9 @@ router.post("/history", checkAuthentication, async function (req, res, next) {
     const client = await pool.connect();
     try {
         const userDetails = await getUserDetails(req.headers.token.username);
-        var activeRides;
+        var rides;
         if (req.body.is_driver) {
-            activeRides = await client.query(
+            rides = await client.query(
                 `SELECT r.${constants.RIDE_PK}, c.${constants.CARS_SEATS}, c.${constants.CARS_NUMBER}, c.${
                     constants.CARS_MAKE
                 }, c.${constants.CARS_MODEL}, r.${constants.RIDE_COMPLETED}, r.${
@@ -120,31 +188,29 @@ router.post("/history", checkAuthentication, async function (req, res, next) {
             );
             logger.info(`Fetched all rides for the driver - ${req.headers.token.username}`);
         } else {
-            activeRides = await client.query(`
-            SELECT R.${constants.RIDE_PK}, R.${constants.RIDE_DEPARTURE}, RD.${constants.RIDE_D_SOURCE}, RD.${
-                constants.RIDE_SOURCE_ID
-            }, RD.${constants.RIDE_D_DEST}, RD.${constants.RIDE_D_DEST_ID} FROM ${
-                constants.RIDE_TABLE
-            } AS R INNER JOIN ${constants.RIDE_D_TABLE} AS RD ON R.${constants.RIDE_PK} = RD.${
-                constants.RIDE_D_RID_FK
-            } WHERE RD.${constants.RIDE_D_RIDE_COMPLETED} = ${req.body.completed} AND RD.${constants.RIDE_D_UID_FK} = ${
-                userDetails.rows[0][constants.USERS_PK]
-            }
+            rides = await client.query(`
+            SELECT R.${constants.RIDE_PK}, R.${constants.RIDE_DEPARTURE}, RD.${constants.RIDE_SOURCE_ID}, RD.${
+                constants.RIDE_DEST_ID
+            }, ST_X(RD.${constants.RIDE_D_SOURCE}::geometry) AS source_latitude, ST_Y(RD.${
+                constants.RIDE_D_SOURCE
+            }::geometry) as source_longitude, ST_X(RD.${constants.RIDE_D_DEST}::geometry) AS dest_latitude, ST_Y(RD.${
+                constants.RIDE_D_DEST
+            }::geometry) as dest_longitude FROM ${constants.RIDE_TABLE} AS R INNER JOIN ${
+                constants.RIDE_D_TABLE
+            } AS RD ON R.${constants.RIDE_PK} = RD.${constants.RIDE_D_RID_FK} WHERE RD.${
+                constants.RIDE_D_RIDE_COMPLETED
+            } = ${req.body.completed} AND RD.${constants.RIDE_D_UID_FK} = ${userDetails.rows[0][constants.USERS_PK]}
             `);
             logger.info(`Fetched rides for customer - '${req.headers.token.username}`);
         }
-        for (i = 0; i < activeRides.rows.length; i++) {
-            if (activeRides.rows[i][constants.RIDE_SOURCE_ID] !== undefined)
-                activeRides.rows[i][constants.RIDE_SOURCE_ID] = await getAddress(
-                    activeRides.rows[i][constants.RIDE_SOURCE_ID]
-                );
+        for (i = 0; i < rides.rows.length; i++) {
+            if (rides.rows[i][constants.RIDE_SOURCE_ID] !== undefined)
+                rides.rows[i][constants.RIDE_SOURCE_ID] = await getAddress(rides.rows[i][constants.RIDE_SOURCE_ID]);
 
-            if (activeRides.rows[i][constants.RIDE_DEST_ID] !== undefined)
-                activeRides.rows[i][constants.RIDE_DEST_ID] = await getAddress(
-                    activeRides.rows[i][constants.RIDE_DEST_ID]
-                );
+            if (rides.rows[i][constants.RIDE_DEST_ID] !== undefined)
+                rides.rows[i][constants.RIDE_DEST_ID] = await getAddress(rides.rows[i][constants.RIDE_DEST_ID]);
         }
-        return res.status(200).json({ rides: activeRides.rows });
+        return res.status(200).json({ rides: rides.rows });
     } catch (err) {
         logger.error(`Error finding active rides for user - ${req.headers.token.username} - ${err}`);
         return res.status(500).json({
