@@ -6,7 +6,7 @@ const { checkAuthentication, getCarDetails, getUserDetails, getLocation, getAddr
 var router = express.Router();
 
 router.post("/details", checkAuthentication, async function (req, res, next) {
-    const expectedParams = [];
+    const expectedParams = ["ride_id"];
     const missingParams = expectedParams.filter((param) => !(param in req.body));
 
     if (missingParams.length > 0) {
@@ -44,9 +44,8 @@ router.post("/publish", checkAuthentication, async function (req, res, next) {
         const source = await getLocation(req.body.source_addr);
         const destination = await getLocation(req.body.dest_addr);
         const userDetails = await getUserDetails(req.headers.token.username);
-        console.log("1");
         const carDetails = await getCarDetails(userDetails.rows[0][constants.USERS_PK], req.body.car_number);
-        console.log("2");
+
         if (carDetails.rows.length == 0) {
             logger.info(
                 `No Cars exist for user - '${req.headers.token.username}' with number - '${req.body.car_number}'`
@@ -175,9 +174,9 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
         const dest = await getLocation(req.body.dest_addr);
         const userDetails = await getUserDetails(req.headers.token.username);
         const rideDetails = await client.query(
-            `SELECT ${constants.RIDE_PK}, ${constants.RIDE_DEPARTURE}, ${constants.RIDE_SEATS}, ${
-                constants.CARS_MAKE
-            }, ${constants.CARS_MODEL}, ${constants.CARS_COLOR} from ${
+            `SELECT ${constants.RIDE_PK}, ${constants.RIDE_DRIVER_IF_FK}, ${constants.RIDE_DEPARTURE}, ${
+                constants.RIDE_SEATS
+            }, ${constants.CARS_MAKE}, ${constants.CARS_MODEL}, ${constants.CARS_COLOR} from ${
                 constants.CARS_TABLE
             } RIGHT JOIN (SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_DRIVER_IF_FK} <> ${
                 userDetails.rows[0][constants.USERS_PK]
@@ -232,11 +231,12 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
                 constants.USERS_TABLE
             } WHERE ${constants.USERS_PK} = ${rideDetails.rows[0][constants.RIDE_DRIVER_IF_FK]}`
         );
+
         return res.status(200).json({
             msg: `Ride booked`,
             rideDetails: {
                 rideID: rideDetails.rows[0][constants.RIDE_PK],
-                driverInfo: driverInfo,
+                driverInfo: driverInfo.rows,
             },
         });
     } catch (err) {
