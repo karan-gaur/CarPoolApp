@@ -111,7 +111,6 @@ router.post("/active", checkAuthentication, async function (req, res, next) {
             logger.info(`Fetched active rides for customer - '${req.headers.token.username}`);
         }
         for (i = 0; i < activeRides.rows.length; i++) {
-            console.log(activeRides.rows[i][constants.RIDE_SOURCE_ID]);
             if (activeRides.rows[i][constants.RIDE_SOURCE_ID] !== undefined)
                 activeRides.rows[i][constants.RIDE_SOURCE_ID] = await getAddress(
                     activeRides.rows[i][constants.RIDE_SOURCE_ID]
@@ -161,13 +160,37 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
         }
 
         // Blocking the row
+        const userDetails = await getUserDetails(req.headers.token.username);
         await client.query(`BEGIN;`);
         await client.query(
-            `SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_PK} = '${
-                driverDetails.rows[0][constants.RIDE_PK]
-            }' FOR UPDATE;`
+            `SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_PK} = ${
+                userDetails.rows[0][constants.USERS_PK]
+            } FOR UPDATE;`
+        );
+
+        await client.query(
+            `UPDATE ${constants.RIDE_TABLE} SET ${constants.RIDE_SEATS} = ${constants.RIDE_SEATS}-1 WHERE ${
+                constants.RIDE_PK
+            } = '${driverDetails.rows[0][constants.RIDE_PK]}'`
+        );
+        await client.query(
+            `INSERT INTO ${constants.RIDE_D_TABLE} (${constants.RIDE_D_RID_FK}, ${constants.RIDE_D_UID_FK}, ${
+                constants.RIDE_D_USERNAME
+            }, ${constants.RIDE_D_SOURCE}, ${constants.RIDE_D_SOURCE_ID}, ${constants.RIDE_D_DEST}, ${
+                constants.RIDE_D_DEST_ID
+            }) VALUES (${driverDetails.rows[0][constants.RIDE_PK]}, ${userDetails.rows[0][constants.USERS_PK]}, '${
+                req.headers.token.username
+            }', ST_GeographyFromText('POINT(${source.lat} ${source.lng})'), '${
+                req.body.source_addr
+            }', ST_GeographyFromText('POINT(${dest.lat} ${dest.lng})'), '${req.body.dest_addr}')`
         );
         await client.query(`COMMIT;`);
+        logger.info(
+            `Ride successfully booked for user - '${req.headers.token.username}'. RIDE_ID - '${
+                driverDetails.rows[0][constants.RIDE_PK]
+            }'`
+        );
+        return res.status(200).json({ msg: `Ride booked` });
     } catch (err) {
         await client.query(`ROLLBACK`);
         logger.error(`Error scheduling rides for user - ${req.headers.token.username} - ${err}`);
