@@ -22,7 +22,8 @@ const navItems: Array<NavItem> = [
 const Navbar = () => {
     const [profileMenu, setProfileMenu] = React.useState(false);
     const [navMenu, setNavMenu] = React.useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    const token = localStorage.getItem('token');
 
     const toggleProfileMenu = () => {
         setProfileMenu(!profileMenu);
@@ -32,7 +33,7 @@ const Navbar = () => {
         setNavMenu(!navMenu);
     }
 
-    const profileMenuItems: Array<NavItem> = isAuthenticated ? [
+    const profileMenuItems: Array<NavItem> = token !== null ? [
         { name: 'Profile', path: '/profile', current: false },
         { name: 'Logout', path: '/login', current: false }
         

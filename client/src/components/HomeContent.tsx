@@ -1,14 +1,16 @@
+import { useNavigate } from 'react-router-dom'
 import Button from './Button'
 import CarpoolAnimation from './CarpoolAnimation'
 
 const HomeContent = () => {
+    const navigate = useNavigate();
     return (
         <div className='flex flex-col justify-center items-center max-md:flex-col'>
             <div className='w-full flex items-center justify-center overflow-hidden max-sm:flex-col'>
                 <CarpoolAnimation />
                 <div className='w-[30%] ml-10 max-sm:w-[80%] max-sm:ml-0'>
-                    <Button width='w-full' text='Search Ride' onClick={() => console.log('Button CLicked')} />
-                    <Button width='w-full' text='Publish Ride' onClick={() => console.log('Button CLicked')} />
+                    <Button width='w-full' text='Search Ride' onClick={() => navigate('/ride-search')} />
+                    <Button width='w-full' text='Publish Ride' onClick={() => navigate('/ride-publish')} />
                 </div>
             </div>
             <div className="flex justify-between flex-wrap max-w-[80%] mx-auto pb-10 space-x-5 max-sm:flex-col max-sm:items-center">
