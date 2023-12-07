@@ -31,21 +31,21 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ handleSaveClick }) =>
         console.log('Authenticated');
 
         // Fetch user profile data directly using the token
-        const profileResponse = await axios.get('your-user-profile-api-endpoint', {
+        const profileResponse = await axios.get('http://localhost:3000/profile', {
           headers: {
             Authorization: `Bearer ${storedToken}`,
           },
         });
 
         // Fetch user address data
-        const addressResponse = await axios.get('your-address-api-endpoint', {
+        const addressResponse = await axios.get('http://localhost:3000/address', {
           headers: {
             Authorization: `Bearer ${storedToken}`,
           },
         });
 
         const userProfileData = profileResponse.data;
-        const userAddressData = addressResponse.data;
+        const userAddressData = addressResponse.data[0];
 
         setUserDetails({
           first_name: userProfileData.first_name,
@@ -79,7 +79,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ handleSaveClick }) =>
       }
 
       // Update user profile
-      const profileUpdateResponse = await axios.post('your-update-profile-api-endpoint', userDetails, {
+      const profileUpdateResponse = await axios.post('http://localhost:3000/profile', userDetails, {
         headers: {
           Authorization: `Bearer ${storedToken}`,
         },
@@ -106,7 +106,8 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ handleSaveClick }) =>
   };
 
   return (
-    <div>
+    <>
+          <div>
       {isEditing ? (
         <form>
           <label>
@@ -161,6 +162,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ handleSaveClick }) =>
         </div>
       )}
     </div>
+    </>
   );
 };
 
