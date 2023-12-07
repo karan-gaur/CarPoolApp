@@ -2,6 +2,10 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import '../pages/RideSearch.css';
+import Buttton from '../components/Button'
+
+
 
 interface EditProfileFormProps {
   handleSaveClick: (updatedDetails: any) => void;
@@ -107,59 +111,97 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ handleSaveClick }) =>
 
   return (
     <>
-          <div>
+    <div>
       {isEditing ? (
-        <form>
-          <label>
-            First Name:
-            <input
-              type="text"
-              name="first_name"
-              value={userDetails.first_name}
-              onChange={handleInputChange}
-            />
-          </label>
-          <label>
-            Last Name:
-            <input
-              type="text"
-              name="last_name"
-              value={userDetails.last_name}
-              onChange={handleInputChange}
-            />
-          </label>
-          <label>
-            Phone Number:
-            <input
-              type="text"
-              name="phone_number"
-              value={userDetails.phone_number}
-              onChange={handleInputChange}
-            />
-          </label>
-          <label>
-            Address:
-            <input
-              type="text"
-              name="address"
-              value={userDetails.address}
-              onChange={handleInputChange}
-            />
-          </label>
-          <button type="button" onClick={handleSave}>
-            Save
-          </button>
-        </form>
+        
+        <>
+        <div className="flex items-center justify-center h-screen w-screen">
+       <div className="bg-gray-800 p-8 rounded-lg"> 
+             
+             <form>
+             <div className="col-span-1">
+   <label htmlFor="first_name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+     First Name
+   </label>
+   <input
+     type="text"
+     id="first_name"
+     name="first_name"
+     value={"Ashish"}
+     // onChange={handleInputChange}
+     className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+     required
+   />
+ </div>
+               <div className="col-span-1">
+   <label htmlFor="last_name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+     Last Name
+   </label>
+   <input
+     type="text"
+     id="last_name"
+     name="last_name"
+     value={"Karra"}
+     // onChange={handleInputChange}
+     className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+     required
+   />
+ </div>
+               
+               <div className="col-span-1">
+                  <label htmlFor="phone_number" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone Number</label>
+                   <input 
+                      type="text" 
+                      id="phone_number" 
+                      name="phone_number"
+                      value={"phone_number"}
+                      //onChange={handleInputChange}
+                      className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
+                      required 
+                    />
+               </div>
+               <div className="col-span-1">
+   <label htmlFor="address" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+     Address
+   </label>
+   <input
+     type="text"
+     id="address"
+     name="address"
+     value={"27368ywe9023"}
+     // onChange={handleInputChange}
+     className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+     required
+   />
+ </div>
+               <div className="col-span-1 mt-2 ">
+                 <Buttton width='w-full' height='h-5' text={'Save Details'} onClick={handleSave}  />
+               </div>
+             </form>
+         </div>
+     </div>
+           
+         </>
+        
       ) : (
+        <div className="flex items-center justify-center h-screen w-screen">
+      <div className="bg-gray-800 p-8 rounded-lg">
         <div>
-          <p>First Name: {userDetails.first_name}</p>
-          <p>Last Name: {userDetails.last_name}</p>
-          <p>Phone Number: {userDetails.phone_number}</p>
-          <p>Address: {userDetails.address}</p>
-          <button type="button" onClick={() => setIsEditing(true)}>
-            Edit Profile
-          </button>
+          <p className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First Name: {userDetails.first_name}</p>
+          <p className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last Name: {userDetails.last_name}</p>
+          <p className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone Number: {userDetails.phone_number}</p>
+          <p className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address: {userDetails.address}</p>
+          <Buttton
+            width='w-full' height='h-5'  text={'Edit Details'}
+            onClick={() => setIsEditing(true)}
+            
+          />
+            
+          
         </div>
+      </div>
+    </div>
+  
       )}
     </div>
     </>
