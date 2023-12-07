@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './Navbar.css';
 import { Link } from 'react-router-dom';
 import profileImage from '../assets/profileImage.jpg';
@@ -17,16 +17,12 @@ const navItems: Array<NavItem> = [
     { name: 'Contact us', path: '/contact', current: false },
 ]
 
-const profileMenuItems: Array<NavItem> = [
-    { name: 'Profile', path: '/profile', current: false },
-    { name: 'Login', path: '/login', current: false },
-    { name: 'Logout', path: '/login', current: false },
-    { name: 'Signup', path: '/signup', current: false },
-]
+
 
 const Navbar = () => {
     const [profileMenu, setProfileMenu] = React.useState(false);
     const [navMenu, setNavMenu] = React.useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const toggleProfileMenu = () => {
         setProfileMenu(!profileMenu);
@@ -36,6 +32,16 @@ const Navbar = () => {
         setNavMenu(!navMenu);
     }
 
+    const profileMenuItems: Array<NavItem> = isAuthenticated ? [
+        { name: 'Profile', path: '/profile', current: false },
+        { name: 'Logout', path: '/login', current: false }
+        
+        ] : [
+        { name: 'Login', path: '/login', current: false },
+        { name: 'Signup', path: '/signup', current: false }
+        
+        
+    ]
     return (
         <div className='w-full fixed flex flex-col z-20'>
             <div className='flex justify-between items-center px-5 pt-2'>
