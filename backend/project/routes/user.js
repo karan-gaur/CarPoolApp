@@ -24,6 +24,37 @@ router.get("/profile", checkAuthentication, async function (req, res, next) {
     }
 });
 
+router.get("/stats", checkAuthentication, async function (req, res, next) {
+    const client = await pool.connect();
+    try {
+        userDetails = await getUserDetails(req.headers.token.username);
+        const drives = await client.query(
+            `SELECT COUNT(*) AS drives FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_DRIVER_IF_FK} = ${
+                userDetails.rows[0][constants.USERS_PK]
+            }`
+        );
+        const rides = await client.query(
+            `SELECT COUNT(*) AS rides FROM ${constants.RIDE_D_TABLE} WHERE ${constants.RIDE_D_UID_FK} = ${
+                userDetails.rows[0][constants.USERS_PK]
+            }`
+        );
+
+        logger.info(`Fetched user ride stats for user - '${req.headers.token.username}'`);
+        return res.status(200).json({
+            drives: drives.rows[0].drives,
+            rides: rides.rows[0].rides,
+        });
+    } catch (err) {
+        logger.error(`Error fetching user's stat for user - ${req.headers.token.username} - ${err}`);
+        return res.status(500).json({
+            error: "Internal Server Error",
+            msg: "Internal Server Error. Please try again in some time!",
+        });
+    } finally {
+        client.release();
+    }
+});
+
 router.post("/profile", checkAuthentication, async function (req, res, next) {
     // Define the expected parameters
     const expectedParams = ["first_name", "last_name", "phone_number"];
