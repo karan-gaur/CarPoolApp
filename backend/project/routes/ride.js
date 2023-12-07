@@ -26,7 +26,9 @@ router.post("/publish", checkAuthentication, async function (req, res, next) {
         const source = await getLocation(req.body.source_addr);
         const destination = await getLocation(req.body.dest_addr);
         const userDetails = await getUserDetails(req.headers.token.username);
+        console.log("1");
         const carDetails = await getCarDetails(userDetails.rows[0][constants.USERS_PK], req.body.car_number);
+        console.log("2");
         if (carDetails.rows.length == 0) {
             logger.info(
                 `No Cars exist for user - '${req.headers.token.username}' with number - '${req.body.car_number}'`
@@ -149,8 +151,21 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
     try {
         const source = await getLocation(req.body.source_addr);
         const dest = await getLocation(req.body.dest_addr);
+        const userDetails = await getUserDetails(req.headers.token.username);
         const driverDetails = await client.query(
-            `SELECT ${constants.RIDE_PK}, ${constants.RIDE_DEPARTURE}, ${constants.RIDE_SEATS}, ${constants.CARS_MAKE}, ${constants.CARS_MODEL}, ${constants.CARS_COLOR} from ${constants.CARS_TABLE} RIGHT JOIN (SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_SEATS} >= 1 AND ${constants.RIDE_COMPLETED} = false AND ST_DWithin(${constants.RIDE_TABLE}.${constants.RIDE_SOURCE}, 'POINT(${source.lat} ${source.lng})'::geography, 3 * 1700) AND ST_DWithin(${constants.RIDE_DEST}, 'POINT(${dest.lat} ${dest.lng})'::geography, 3 * 1700) ) AS R ON ${constants.CARS_PK}=R.${constants.RIDE_CAR_ID_FK}`
+            `SELECT ${constants.RIDE_PK}, ${constants.RIDE_DEPARTURE}, ${constants.RIDE_SEATS}, ${
+                constants.CARS_MAKE
+            }, ${constants.CARS_MODEL}, ${constants.CARS_COLOR} from ${
+                constants.CARS_TABLE
+            } RIGHT JOIN (SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_DRIVER_IF_FK} <> ${
+                userDetails.rows[0][constants.USERS_PK]
+            } AND ${constants.RIDE_SEATS} >= 1 AND ${constants.RIDE_COMPLETED} = false AND ST_DWithin(${
+                constants.RIDE_TABLE
+            }.${constants.RIDE_SOURCE}, 'POINT(${source.lat} ${source.lng})'::geography, 3 * 1700) AND ST_DWithin(${
+                constants.RIDE_DEST
+            }, 'POINT(${dest.lat} ${dest.lng})'::geography, 3 * 1700) ) AS R ON ${constants.CARS_PK}=R.${
+                constants.RIDE_CAR_ID_FK
+            }`
         );
         logger.info(`Fetched all available ride for user - ${req.headers.token.username}`);
 
@@ -160,7 +175,6 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
         }
 
         // Blocking the row
-        const userDetails = await getUserDetails(req.headers.token.username);
         await client.query(`BEGIN;`);
         await client.query(
             `SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_PK} = ${
