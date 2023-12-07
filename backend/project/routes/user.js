@@ -3,7 +3,13 @@ const router = express.Router();
 
 const constants = require("../constants");
 const { pool, logger } = require("../config");
-const { checkAuthentication, getUserDetails, getLocation, checkAdminAuthentication } = require("../utilities/utility");
+const {
+    checkAuthentication,
+    getUserDetails,
+    getLocation,
+    checkAdminAuthentication,
+    getCarDetails,
+} = require("../utilities/utility");
 
 router.get("/profile", checkAuthentication, async function (req, res, next) {
     try {
@@ -218,6 +224,20 @@ router.post("/cars", checkAuthentication, async function (req, res, next) {
     const client = await pool.connect();
     try {
         const userDetails = await getUserDetails(req.headers.token.username);
+        const carDetails = await getCarDetails(userDetails.rows[0][constants.USERS_PK], req.body.number);
+
+        // Checking if car already exists
+        if (carDetails.rows.length >= 1) {
+            logger.error(
+                `Car already exists with number - '${req.body.number}' for user - '${req.headers.token.username}'`
+            );
+            return res.status(409).json({
+                error: "Conflict",
+                msg: `Car number - '${req.body.number}' already exists for user!`,
+            });
+        }
+
+        // Adding car to database for user
         await client.query(
             `INSERT INTO ${constants.CARS_TABLE} (${constants.CARS_USER_ID_FK}, ${constants.CARS_SEATS}, ${
                 constants.CARS_NUMBER
