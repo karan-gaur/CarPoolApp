@@ -150,7 +150,51 @@ router.post("/publish", checkAuthentication, async function (req, res, next) {
     }
 });
 
-router.post("/user_review", checkAuthentication, async function (req, res, next) {});
+router.post("/user/review", checkAuthentication, async function (req, res, next) {
+    const expectedParams = ["ride_id", "drating", "dreview"];
+    const missingParams = expectedParams.filter((param) => !(param in req.body));
+
+    if (missingParams.length > 0) {
+        // Respond with an error if there are missing parameters
+        logger.warn(`Request has missing parameters - ${missingParams}`);
+        return res.status(400).json({
+            msg: `Missing parameters: ${missingParams.join(", ")}`,
+        });
+    }
+
+    const client = await pool.connect();
+    try {
+        const rideDetails = await client.query(
+            `SELECT * FROM ${constants.RIDE_D_TABLE} WHERE ${constants.RIDE_D_USERNAME} = '${req.headers.token.username}' AND ${constants.RIDE_D_RID_FK} = ${req.body.ride_id}`
+        );
+        if (rideDetails.rows.length == 0) {
+            logger.info(
+                `Unauthorised access. No such rides with username - '${req.body.username}' and ride_id - '${req.body.ride_id}'`
+            );
+            return res.status(401).json({
+                error: "Unauthorised Access",
+                msg: `User can only review rides scheduled by them`,
+            });
+        }
+        await client.query(
+            `UPDATE ${constants.RIDE_D_TABLE} SET ${constants.RIDE_D_DRATE} = ${req.body.drating}, ${constants.RIDE_D_DREVIEW} = '${req.body.dreview}' WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id} AND ${constants.RIDE_D_USERNAME} = '${req.headers.token.username}'`
+        );
+        logger.info(`Addded rating/review by user - '${req.headers.token.username}' for ride - '${req.body.ride_id}'`);
+        return res.status(200).json({
+            msg: "Review added successfully",
+        });
+    } catch (err) {
+        logger.error(
+            `Error submitting user review by user - '${req.headers.token.username}' for ride - '${req.body.ride_id}' - ${err}`
+        );
+        return res.status(500).json({
+            error: "Internal Server Error",
+            msg: "Internal Server Error. Please try again in some time!",
+        });
+    } finally {
+        client.release();
+    }
+});
 
 router.post("/history", checkAuthentication, async function (req, res, next) {
     const expectedParams = ["is_driver", "completed"];
@@ -370,7 +414,7 @@ router.post("/start", checkAuthentication, async function (req, res, next) {
 });
 
 router.post("/end", checkAuthentication, async function (req, res, next) {
-    const expectedParams = ["ride_id", "username", "crating"];
+    const expectedParams = ["ride_id", "username", "crating", "creview"];
     const missingParams = expectedParams.filter((param) => !(param in req.body));
 
     if (missingParams.length > 0) {
@@ -404,7 +448,7 @@ router.post("/end", checkAuthentication, async function (req, res, next) {
         }
 
         await client.query(
-            `UPDATE ${constants.RIDE_D_TABLE} SET ${constants.RIDE_D_END_TIME} = ${time}, ${constants.RIDE_D_CRATE} = ${req.body.crating} WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id} AND ${constants.RIDE_D_USERNAME} = '${req.body.username}'`
+            `UPDATE ${constants.RIDE_D_TABLE} SET ${constants.RIDE_D_END_TIME} = ${time}, ${constants.RIDE_D_CRATE} = ${req.body.crating}, ${constants.RIDE_D_CREVIEW} = '${req.body.creview}', ${constants.RIDE_D_RIDE_COMPLETED} = true WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id} AND ${constants.RIDE_D_USERNAME} = '${req.body.username}'`
         );
         logger.info(`Ride ended for user '${req.body.username}' for ride - '${req.body.ride_id}'`);
         return res
