@@ -3,8 +3,19 @@ import Buttton from '../components/Button';
 import usePlacesAutocomplete from 'use-places-autocomplete';
 import { useEffect, useRef, useState } from 'react';
 import MapComponent from '../components/MapComponent';
-import { getCoordinatesFromAddress1, getCoordinatesFromAddress2 } from '../services/googleApiService';
+import { getCoordinatesFromAddress } from '../services/googleApiService';
 import './RideSearch.css';
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
+interface BookedRideType {
+  rideID: number;
+  first_name: string;
+  last_name: string;
+  driver_rating: number;
+}
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
@@ -55,7 +66,16 @@ const RideSearch = () => {
 
   const [srcCor, setSrcCor] = useState<CorsType>({ lat: null, lng: null });
   const [destCor, setDestCor] = useState<CorsType>({ lat: null, lng: null });
+  const [bookedRide, setBookedRide] = useState<BookedRideType>({
+    rideID: 0,
+    first_name: '',
+    last_name: '',
+    driver_rating: 0,
+  });
+  const [src, setSrc] = useState<string>('');
+  const [dest, setDest] = useState<string>('');
 
+  const [rideFound, setRideFound] = useState(false);
 
   const renderSuggestionsFrom = () =>
     suggestionsFrom.data.map((suggestion) => {
@@ -85,19 +105,41 @@ const RideSearch = () => {
       );
     });
 
-  const onRideSearch = () => {
-    console.log('Form Submitted!');
-    console.log(formData);
-    console.log(srcCor);
-    console.log(destCor);
+  const onRideSearch = async () => {
+    try {
+      const response = await axios.post('http://localhost:3000/ride/schedule', {
+        "source_addr": src,
+        "dest_addr": dest,
+      }, { 
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('token')}` 
+        } 
+      });
+
+      console.log('Ride data:', response.data);
+      if (response.status === 200) {
+        setBookedRide({
+          rideID: response.data.rideDetails.rideID,
+          first_name: response.data.rideDetails.driverInfo[0].first_name,
+          last_name: response.data.rideDetails.driverInfo[0].last_name,
+          driver_rating: response.data.rideDetails.driverInfo[0].river_rating,
+        });
+        setRideFound(true);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Ride not found!');
+      setRideFound(false);
+    }
   };
 
   const handleSelectFrom = (place_id: string, main_text: string) => async () => {
     try {
       setValueFrom(main_text, false);
       clearSuggestionsFrom();
-      const { lat, lng } = getCoordinatesFromAddress1(place_id);
+      const { lat, lng } = await getCoordinatesFromAddress(place_id);
       setSrcCor({ lat, lng });
+      setSrc(place_id);
     } catch (error) {
       console.error('Error fetching place details:', error);
     }
@@ -107,8 +149,9 @@ const RideSearch = () => {
     try {
       setValueTo(main_text, false);
       clearSuggestionsTo();
-      const { lat, lng } = getCoordinatesFromAddress2(place_id);
+      const { lat, lng } = await getCoordinatesFromAddress(place_id);
       setDestCor({ lat, lng });
+      setDest(place_id);
     } catch (error) {
       console.error('Error fetching place details:', error);
     }
@@ -168,6 +211,7 @@ const RideSearch = () => {
   return (
     <>
       <Transition />
+      <ToastContainer />
       <div className='min-h-screen bg-black absolute z-10 w-screen flex flex-col items-center'>
         <div className='flex flex-col w-full'>
           <MapComponent srcLat={srcCor.lat} srcLng={srcCor.lng} destLat={destCor.lat} destLng={destCor.lng} />
@@ -175,27 +219,27 @@ const RideSearch = () => {
             <div className="grid gap-6 mb-6 grid-cols-2 max-md:grid-cols-1">
               <div className="col-span-1">
                 <label htmlFor="source" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">From?</label>
-                <input 
-                  type="text" 
-                  value={valueFrom} 
-                  onChange={e => setValueFrom(e.target.value)} 
-                  id="source" 
-                  className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
-                  placeholder="271 Van Wagenene Ave, Jersey City" 
-                  required 
+                <input
+                  type="text"
+                  value={valueFrom}
+                  onChange={e => setValueFrom(e.target.value)}
+                  id="source"
+                  className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  placeholder="271 Van Wagenene Ave, Jersey City"
+                  required
                 />
                 {suggestionsFrom.status === 'OK' && <ul>{renderSuggestionsFrom()}</ul>}
               </div>
               <div className="col-span-1">
                 <label htmlFor="destination" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Where To?</label>
-                <input 
-                  type="text" 
-                  value={valueTo} 
-                  onChange={e => setValueTo(e.target.value)} 
-                  id="destination" 
-                  className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
-                  placeholder="NJIT Campus Center" 
-                  required 
+                <input
+                  type="text"
+                  value={valueTo}
+                  onChange={e => setValueTo(e.target.value)}
+                  id="destination"
+                  className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  placeholder="NJIT Campus Center"
+                  required
                 />
                 {suggestionsTo.status === 'OK' && <ul>{renderSuggestionsTo()}</ul>}
               </div>
@@ -204,16 +248,16 @@ const RideSearch = () => {
             <div className="grid gap-6 mb-6 grid-cols-3 max-md:grid-cols-1">
               <div className="col-span-1">
                 <label htmlFor="seats" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">No of Seats Required</label>
-                <input 
+                <input
                   value={formData.seats}
                   onChange={(e) => (
                     setFormData((prev) => ({ ...prev, seats: e.target.value }))
                   )}
-                  type="text" 
-                  id="seats" 
-                  className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
-                  placeholder="No of Seats" 
-                  required 
+                  type="text"
+                  id="seats"
+                  className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  placeholder="No of Seats"
+                  required
                 />
               </div>
               <div className="col-span-1 mt-2 max-md:hidden">
@@ -238,6 +282,30 @@ const RideSearch = () => {
               </div>
             </div>
           </form>
+          
+          {
+            rideFound && (
+              <div className='flex flex-col items-center'>
+                <div className='flex flex-col items-center' ref={profileRef}>
+                  <div className='flex flex-col items-center'>
+                    <div className='flex flex-col items-center' ref={profileImageRef}>
+                      <div className='my-5'>
+                        Your Ride is booked!
+                      </div>
+                      <img src='https://i.imgur.com/8Km9tLL.png' alt='profile' className='w-20 h-20 rounded-full' />
+                      <p className='text-white text-lg mt-2'>{bookedRide.first_name} {bookedRide.last_name}</p>
+                      <p className='text-white text-lg mt-2'>{bookedRide.driver_rating}</p>
+                    </div>
+                    <div className='flex flex-col items-center mt-4'>
+                      <p className='text-white text-lg mt-2'>Ride ID: {bookedRide.rideID}</p>
+                      <p className='text-white text-lg mt-2'>Date: {formData.date}</p>
+                      <p className='text-white text-lg mt-2'>Seats: {formData.seats}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          }
 
         </div>
       </div>

@@ -35,7 +35,7 @@ router.get("/stats", checkAuthentication, async function (req, res, next) {
     try {
         userDetails = await getUserDetails(req.headers.token.username);
         const drives = await client.query(
-            `SELECT COUNT(*) AS drives FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_DRIVER_IF_FK} = ${
+            `SELECT COUNT(*) AS drives FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_DRIVER_ID_FK} = ${
                 userDetails.rows[0][constants.USERS_PK]
             }`
         );
