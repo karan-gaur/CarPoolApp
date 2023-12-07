@@ -40,12 +40,12 @@ router.post("/details", checkAuthentication, async function (req, res, next) {
             `SELECT ${constants.USERS_FIRST_NAME}, ${constants.USERS_LAST_NAME}, ${constants.USERS_DRIVER_R}, ${
                 constants.USERS_PHONE_NUMBER
             } FROM ${constants.USERS_TABLE} WHERE ${constants.USERS_PK} = ${
-                rideDetails.rows[0][constants.RIDE_DRIVER_IF_FK]
+                rideDetails.rows[0][constants.RIDE_DRIVER_ID_FK]
             }`
         );
         var userRideDetails;
         var is_driver = false;
-        if (rideDetails.rows[0][constants.RIDE_DRIVER_IF_FK] == userDetails.rows[0][constants.USERS_PK]) {
+        if (rideDetails.rows[0][constants.RIDE_DRIVER_ID_FK] == userDetails.rows[0][constants.USERS_PK]) {
             // User is driver and needs all informations about the ride
             is_driver = true;
             userRideDetails = await client.query(
@@ -125,7 +125,7 @@ router.post("/publish", checkAuthentication, async function (req, res, next) {
         }
 
         await client.query(
-            `INSERT INTO ${constants.RIDE_TABLE} (${constants.RIDE_DRIVER_IF_FK}, ${constants.RIDE_CAR_ID_FK}, ${
+            `INSERT INTO ${constants.RIDE_TABLE} (${constants.RIDE_DRIVER_ID_FK}, ${constants.RIDE_CAR_ID_FK}, ${
                 constants.RIDE_SEATS
             }, ${constants.RIDE_DEPARTURE}, ${constants.RIDE_SOURCE}, ${constants.RIDE_SOURCE_ID}, ${
                 constants.RIDE_DEST
@@ -182,7 +182,7 @@ router.post("/history", checkAuthentication, async function (req, res, next) {
                     constants.RIDE_DEST
                 }::geometry) as dest_longitude FROM ${constants.CARS_TABLE} AS c RIGHT JOIN (SELECT * FROM ${
                     constants.RIDE_TABLE
-                } WHERE ${constants.RIDE_DRIVER_IF_FK} = ${userDetails.rows[0][constants.USERS_PK]} AND ${
+                } WHERE ${constants.RIDE_DRIVER_ID_FK} = ${userDetails.rows[0][constants.USERS_PK]} AND ${
                     constants.RIDE_COMPLETED
                 } = ${req.body.completed}) AS r on r.${constants.RIDE_CAR_ID_FK}= c.${constants.CARS_PK}`
             );
@@ -240,11 +240,11 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
         const dest = await getLocation(req.body.dest_addr);
         const userDetails = await getUserDetails(req.headers.token.username);
         const rideDetails = await client.query(
-            `SELECT ${constants.RIDE_PK}, ${constants.RIDE_DRIVER_IF_FK}, ${constants.RIDE_DEPARTURE}, ${
+            `SELECT ${constants.RIDE_PK}, ${constants.RIDE_DRIVER_ID_FK}, ${constants.RIDE_DEPARTURE}, ${
                 constants.RIDE_SEATS
             }, ${constants.CARS_MAKE}, ${constants.CARS_MODEL}, ${constants.CARS_COLOR} from ${
                 constants.CARS_TABLE
-            } RIGHT JOIN (SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_DRIVER_IF_FK} <> ${
+            } RIGHT JOIN (SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_DRIVER_ID_FK} <> ${
                 userDetails.rows[0][constants.USERS_PK]
             } AND ${constants.RIDE_SEATS} >= 1 AND ${constants.RIDE_COMPLETED} = false AND ST_DWithin(${
                 constants.RIDE_TABLE
@@ -295,7 +295,7 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
         const driverInfo = await client.query(
             `SELECT ${constants.USERS_FIRST_NAME}, ${constants.USERS_LAST_NAME}, ${constants.USERS_DRIVER_R} from ${
                 constants.USERS_TABLE
-            } WHERE ${constants.USERS_PK} = ${rideDetails.rows[0][constants.RIDE_DRIVER_IF_FK]}`
+            } WHERE ${constants.USERS_PK} = ${rideDetails.rows[0][constants.RIDE_DRIVER_ID_FK]}`
         );
 
         return res.status(200).json({
@@ -317,8 +317,108 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
     }
 });
 
-router.post("/start", function (req, res, next) {});
+router.post("/start", checkAuthentication, async function (req, res, next) {
+    const expectedParams = ["ride_id", "username"];
+    const missingParams = expectedParams.filter((param) => !(param in req.body));
 
-router.post("/end", checkAuthentication, function (req, res, next) {});
+    if (missingParams.length > 0) {
+        // Respond with an error if there are missing parameters
+        logger.warn(`Request has missing parameters - ${missingParams}`);
+        return res.status(400).json({
+            msg: `Missing parameters: ${missingParams.join(", ")}`,
+        });
+    }
+
+    const client = await pool.connect();
+    try {
+        const time = new Date().getTime();
+        // Verifying if the person updating the values is indeed the driver
+        const userDetails = await getUserDetails(req.headers.token.username);
+        const rideDetails = await client.query(
+            `SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_PK} = ${req.body.ride_id}`
+        );
+
+        if (
+            rideDetails.rows.length == 0 ||
+            userDetails.rows[0][constants.USERS_PK] != rideDetails.rows[0][constants.RIDE_DRIVER_ID_FK]
+        ) {
+            logger.error(
+                `Unauthorised access - Only Driver of the ride can start/end trip for everyone. ride_id - '${req.body.ride_id}'; username = '${req.headers.token.username}'`
+            );
+            return res.status(401).json({
+                error: "Unauthorised Access",
+                msg: "Unauthorised Access - Only driver can start/end a trip",
+            });
+        }
+
+        await client.query(
+            `UPDATE ${constants.RIDE_D_TABLE} SET ${constants.RIDE_D_START_TIME} = ${time} WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id} AND ${constants.RIDE_D_USERNAME} = '${req.body.username}'`
+        );
+        logger.info(`Ride started for user '${req.body.username}' for ride - '${req.body.ride_id}'`);
+        return res
+            .status(200)
+            .json({ msg: `Ride started for user - '${req.body.username}' for ride - '${req.body.ride_id}'` });
+    } catch (err) {
+        logger.error(`Error starting ride for '${req.body.username}' with ride_id - '${req.body.ride_id}' - ${err}`);
+        return res.status(500).json({
+            error: "Internal Server Error",
+            msg: "Internal Server Error. Please try again in some time!",
+        });
+    } finally {
+        client.release();
+    }
+});
+
+router.post("/end", checkAuthentication, async function (req, res, next) {
+    const expectedParams = ["ride_id", "username", "crating"];
+    const missingParams = expectedParams.filter((param) => !(param in req.body));
+
+    if (missingParams.length > 0) {
+        // Respond with an error if there are missing parameters
+        logger.warn(`Request has missing parameters - ${missingParams}`);
+        return res.status(400).json({
+            msg: `Missing parameters: ${missingParams.join(", ")}`,
+        });
+    }
+
+    const client = await pool.connect();
+    try {
+        const time = new Date().getTime();
+        // Verifying if the person updating the values is indeed the driver
+        const userDetails = await getUserDetails(req.headers.token.username);
+        const rideDetails = await client.query(
+            `SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_PK} = ${req.body.ride_id}`
+        );
+
+        if (
+            rideDetails.rows.length == 0 ||
+            userDetails.rows[0][constants.USERS_PK] != rideDetails.rows[0][constants.RIDE_DRIVER_ID_FK]
+        ) {
+            logger.error(
+                `Unauthorised access - Only Driver of the ride can start/end trip for everyone. ride_id - '${req.body.ride_id}'; username = '${req.headers.token.username}'`
+            );
+            return res.status(401).json({
+                error: "Unauthorised Access",
+                msg: "Unauthorised Access - Only driver can start/end a trip",
+            });
+        }
+
+        await client.query(
+            `UPDATE ${constants.RIDE_D_TABLE} SET ${constants.RIDE_D_END_TIME} = ${time}, ${constants.RIDE_D_CRATE} = ${req.body.crating} WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id} AND ${constants.RIDE_D_USERNAME} = '${req.body.username}'`
+        );
+        logger.info(`Ride ended for user '${req.body.username}' for ride - '${req.body.ride_id}'`);
+        return res
+            .status(200)
+            .json({ msg: `Ride ended for user - '${req.body.username}' for ride - '${req.body.ride_id}'` });
+    } catch (err) {
+        logger.error(`Error ending ride for '${req.body.username}' with ride_id - '${req.body.ride_id}' - ${err}`);
+        return res.status(500).json({
+            error: "Internal Server Error",
+            msg: "Internal Server Error. Please try again in some time!",
+        });
+    } finally {
+        client.release();
+    }
+});
 
 module.exports = router;

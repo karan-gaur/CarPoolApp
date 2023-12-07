@@ -39,7 +39,7 @@ module.exports = {
     // Ride Table
     RIDE_TABLE: "ride",
     RIDE_PK: "ride_id_pk",
-    RIDE_DRIVER_IF_FK: "driver_id_fk",
+    RIDE_DRIVER_ID_FK: "driver_id_fk",
     RIDE_CAR_ID_FK: "car_id_fk",
     RIDE_SEATS: "seats_available",
     RIDE_DEPARTURE: "departure_time",
