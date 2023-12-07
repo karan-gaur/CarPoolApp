@@ -3,13 +3,19 @@ import profileImage from '../assets/profileImage.jpg';
 import Transition from '../components/Transition';
 import ThreejsPlane from '../components/ImagePlane';
 import Button from '../components/Button';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { gsap, Power4 } from 'gsap';
+
+import { useNavigate } from 'react-router-dom';
+
+
 
 const Profile = () => {
 
+  const navigate = useNavigate();
   const profileRef = useRef(null);
   const profileImageRef = useRef(null);
+  const [isEditing, setIsEditing]= useState(false);
 
   useEffect(() => {
     const profileElement = profileRef.current;
@@ -38,6 +44,10 @@ const Profile = () => {
     }
   }, []);
 
+  const handleEditProfileClick = () => {
+    navigate('/edit-profile');
+  };
+
   return (
     <>
       <Transition />
@@ -63,6 +73,7 @@ const Profile = () => {
             </div>
           </div>
           <Button width='w-full' height='h-5' text='My Rides' onClick={() => console.log("Button Clicked")} />
+          <Button width='w-full' height='h-5' text='Edit Profile' onClick={handleEditProfileClick} />
         </div>
       </div>
 
