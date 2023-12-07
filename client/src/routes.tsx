@@ -9,8 +9,9 @@ import SignUp from './pages/SignUp';
 import RideDetail from './pages/RideDetail';
 import CarAdd from './pages/CarAdd';
 import Admin from './pages/Admin';
-import EditProfile from './pages/EditProfile';
+import EditProfileFrom from './components/EditProfileForm';
 import Contact from './pages/Contact';
+import EditProfileForm from './components/EditProfileForm';
 export const publicRoutes = [
     {
         path: '/',
@@ -58,7 +59,7 @@ export const publicRoutes = [
     },
     {
         path: '/edit-profile',
-        element: <EditProfile />
+        element: <EditProfileForm />
     },
     {
         path: '/contact',
