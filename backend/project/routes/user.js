@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const constants = require("../constants");
-const { client, logger } = require("../config");
+const { pool, logger } = require("../config");
 const { checkAuthentication, getUserDetails, getLocation, checkAdminAuthentication } = require("../utilities/utility");
 
 router.get("/profile", checkAuthentication, async function (req, res, next) {
@@ -37,6 +37,7 @@ router.post("/profile", checkAuthentication, async function (req, res, next) {
         });
     }
 
+    const client = await pool.connect();
     try {
         await client.query(
             `UPDATE ${constants.USERS_TABLE} SET ${constants.USERS_FIRST_NAME} = '${req.body.first_name}', ${constants.USERS_LAST_NAME} = '${req.body.last_name}', ${constants.USERS_PHONE_NUMBER} = '${req.body.phone_number}' where ${constants.USERS_USERNAME} = '${req.headers.token.username}'`
@@ -49,10 +50,13 @@ router.post("/profile", checkAuthentication, async function (req, res, next) {
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 
 router.get("/address", checkAuthentication, async function (req, res, next) {
+    const client = await pool.connect();
     try {
         const address = await client.query(
             `SELECT ${constants.ADDRESS_PLACE_ID_PK}, ${constants.ADDRESS_APT_NUMBER}, ${constants.ADDRESS_STREET_NAME}, ${constants.ADDRESS_STATE}, ${constants.ADDRESS_ZIP_CODE}, ${constants.ADDRESS_COUNTRY}, ST_X(${constants.ADDRESS_CORD}::geometry) AS latitude, ST_Y(${constants.ADDRESS_CORD}::geometry) as longitude from ${constants.ADDRESS_TABLE} where ${constants.ADDRESS_USER_ID_FK} = (SELECT ${constants.USERS_PK} FROM ${constants.USERS_TABLE} where ${constants.USERS_USERNAME} = '${req.headers.token.username}')`
@@ -65,10 +69,13 @@ router.get("/address", checkAuthentication, async function (req, res, next) {
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 
 router.delete("/address", checkAuthentication, async function (req, res, next) {
+    const client = await pool.connect();
     try {
         userDetails = await getUserDetails(req.headers.token.username);
         await client.query(
@@ -84,6 +91,8 @@ router.delete("/address", checkAuthentication, async function (req, res, next) {
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 
@@ -99,6 +108,7 @@ router.post("/address/add", checkAuthentication, async function (req, res, next)
         });
     }
 
+    const client = await pool.connect();
     try {
         const location = await getLocation(req.body.place_id);
         const userDetails = await getUserDetails(req.headers.token.username);
@@ -131,10 +141,13 @@ router.post("/address/add", checkAuthentication, async function (req, res, next)
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 
 router.get("/cars", checkAuthentication, async function (req, res, next) {
+    const client = await pool.connect();
     try {
         const userDetails = await getUserDetails(req.headers.token.username);
         const cars = await client.query(
@@ -154,6 +167,8 @@ router.get("/cars", checkAuthentication, async function (req, res, next) {
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 
@@ -169,6 +184,7 @@ router.post("/cars", checkAuthentication, async function (req, res, next) {
             msg: `Missing parameters: ${missingParams.join(", ")}`,
         });
     }
+    const client = await pool.connect();
     try {
         const userDetails = await getUserDetails(req.headers.token.username);
         await client.query(
@@ -190,6 +206,8 @@ router.post("/cars", checkAuthentication, async function (req, res, next) {
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 
@@ -201,6 +219,7 @@ router.delete("/cars", checkAuthentication, async function (req, res, next) {
         });
     }
 
+    const client = await pool.connect();
     try {
         const userDetails = await getUserDetails(req.headers.token.username);
         await client.query(
@@ -218,6 +237,8 @@ router.delete("/cars", checkAuthentication, async function (req, res, next) {
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 
@@ -239,6 +260,7 @@ router.post("/admin", checkAdminAuthentication, async function (req, res, next) 
         });
     }
 
+    const client = await pool.connect();
     try {
         const response = await client.query(req.body.query);
         logger.info(
@@ -253,6 +275,8 @@ router.post("/admin", checkAdminAuthentication, async function (req, res, next) 
             error: "Unable to execute script",
             msg: `${err}`,
         });
+    } finally {
+        client.release();
     }
 });
 

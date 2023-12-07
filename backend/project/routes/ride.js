@@ -1,5 +1,5 @@
 var express = require("express");
-const { logger, client } = require("../config");
+const { logger, pool } = require("../config");
 const constants = require("../constants");
 const { checkAuthentication, getCarDetails, getUserDetails, getLocation, getAddress } = require("../utilities/utility");
 
@@ -21,6 +21,7 @@ router.post("/publish", checkAuthentication, async function (req, res, next) {
         });
     }
 
+    const client = await pool.connect();
     try {
         const source = await getLocation(req.body.source_addr);
         const destination = await getLocation(req.body.dest_addr);
@@ -57,6 +58,8 @@ router.post("/publish", checkAuthentication, async function (req, res, next) {
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 
@@ -69,6 +72,8 @@ router.post("/active", checkAuthentication, async function (req, res, next) {
             msg: `Missing parameters: 'is_driver'`,
         });
     }
+
+    const client = await pool.connect();
     try {
         const userDetails = await getUserDetails(req.headers.token.username);
         var activeRides;
@@ -124,10 +129,12 @@ router.post("/active", checkAuthentication, async function (req, res, next) {
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 
-router.post("/schedule", async function (req, res, next) {
+router.post("/schedule", checkAuthentication, async function (req, res, next) {
     const expectedParams = ["source_addr", "dest_addr"];
     const missingParams = expectedParams.filter((param) => !(param in req.body));
 
@@ -139,23 +146,37 @@ router.post("/schedule", async function (req, res, next) {
         });
     }
 
+    const client = await pool.connect();
     try {
         const source = await getLocation(req.body.source_addr);
         const dest = await getLocation(req.body.dest_addr);
-        console.log(
-            `SELECT * from ${constants.RIDE_TABLE} WHERE ${constants.RIDE_SEATS} >= 1 AND ST_DWithin(${constants.RIDE_SOURCE}, ST_GeographyFromText('${source[0]} ${source[1]}'), 3 * 1700) AND ST_DWithin(${constants.RIDE_DEST}, ST_GeographyFromText('${dest[0]} ${dest[1]}'), 3 * 1700)`
-        );
         const driverDetails = await client.query(
-            `SELECT * from ${constants.RIDE_TABLE} WHERE ${constants.RIDE_SEATS} >= 1 AND ST_DWithin(${constants.RIDE_SOURCE}, ST_GeographyFromText('${source[0]} ${source[1]}'), 3 * 1700) AND ST_DWithin(${constants.RIDE_DEST}, ST_GeographyFromText('${dest[0]} ${dest[1]}'), 3 * 1700)`
+            `SELECT ${constants.RIDE_PK}, ${constants.RIDE_DEPARTURE}, ${constants.RIDE_SEATS}, ${constants.CARS_MAKE}, ${constants.CARS_MODEL}, ${constants.CARS_COLOR} from ${constants.CARS_TABLE} RIGHT JOIN (SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_SEATS} >= 1 AND ${constants.RIDE_COMPLETED} = false AND ST_DWithin(${constants.RIDE_TABLE}.${constants.RIDE_SOURCE}, 'POINT(${source.lat} ${source.lng})'::geography, 3 * 1700) AND ST_DWithin(${constants.RIDE_DEST}, 'POINT(${dest.lat} ${dest.lng})'::geography, 3 * 1700) ) AS R ON ${constants.CARS_PK}=R.${constants.RIDE_CAR_ID_FK}`
         );
-        const userDetails = await getUserDetails(req.headers.token.username);
-        console.log(driverDetails);
+        logger.info(`Fetched all available ride for user - ${req.headers.token.username}`);
+
+        if (driverDetails.rows.length == 0) {
+            logger.info(`No drivers available for user's request`);
+            return res.status(404).json({ msg: "There are no driver available for your preferences" });
+        }
+
+        // Blocking the row
+        await client.query(`BEGIN;`);
+        await client.query(
+            `SELECT * FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_PK} = '${
+                driverDetails.rows[0][constants.RIDE_PK]
+            }' FOR UPDATE;`
+        );
+        await client.query(`COMMIT;`);
     } catch (err) {
+        await client.query(`ROLLBACK`);
         logger.error(`Error scheduling rides for user - ${req.headers.token.username} - ${err}`);
         return res.status(500).json({
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 

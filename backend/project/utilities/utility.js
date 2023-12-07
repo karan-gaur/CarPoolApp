@@ -2,7 +2,7 @@ var jwt = require("jsonwebtoken");
 var axios = require("axios");
 
 const constants = require("../constants");
-const { ACCESS_TOKEN_SECRET_KEY, GOOGLE_API_KEY, client, logger } = require("../config");
+const { ACCESS_TOKEN_SECRET_KEY, GOOGLE_API_KEY, pool, logger } = require("../config");
 
 function checkAdminAuthentication(req, res, next) {
     if (typeof req.headers["authorization"] !== "undefined") {
@@ -52,6 +52,7 @@ function checkAuthentication(req, res, next) {
 }
 
 async function getUserDetails(username) {
+    const client = await pool.connect();
     try {
         userDetails = await client.query(
             `SELECT * FROM ${constants.USERS_TABLE} where ${constants.USERS_USERNAME} = '${username}'`
@@ -61,6 +62,8 @@ async function getUserDetails(username) {
     } catch (err) {
         logger.error(`Error geting user profile details - ${err}`);
         throw err;
+    } finally {
+        client.release();
     }
 }
 
@@ -76,6 +79,7 @@ async function getLocation(place_id) {
 
 async function getCarDetails(user_id, number) {
     try {
+        const client = await client.connect();
         const carDetails = await client.query(
             `SELECT * FROM ${constants.CARS_TABLE} WHERE ${constants.CARS_NUMBER} = '${number}' AND ${constants.CARS_USER_ID_FK} = ${user_id}`
         );
@@ -84,6 +88,8 @@ async function getCarDetails(user_id, number) {
     } catch (err) {
         logger.error(`Error fetching cardeetails for user_id - '${user_id} - ${err}`);
         throw err;
+    } finally {
+        client.release();
     }
 }
 
