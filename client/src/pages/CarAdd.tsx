@@ -68,26 +68,40 @@ const CarAdd: React.FC = () => {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        const response = await axios.post('http://localhost:3000/cars', formData, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        }
-        );
-        
-        if (response.status === 200) {
-            toast.success('Car added successfully!');
-            setFormData({
-                seats: 0,
-                number: '',
-                make: '',
-                model: '',
-                color: ''
+
+        try {
+            const response = await axios.post('http://localhost:3000/cars', formData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
             });
-        } else {
-            toast.error(response.data.message || 'Error adding car!');
+
+            console.log(response.status);
+
+            if (response.status === 200) {
+                toast.success('Car added successfully!');
+                setFormData({
+                    seats: 0,
+                    number: '',
+                    make: '',
+                    model: '',
+                    color: ''
+                });
+            } else {
+                console.error('Unexpected response status:', response.status);
+                toast.error('Error adding car! Please try again.');
+            }
+        } catch (error: any) {
+            console.error('Error adding car:', error);
+
+            // Check if the error has a response property
+            // The request was made, but the server responded with a non-2xx status
+            console.error('Server responded with error:', error.response.data);
+            toast.error(error.response.data.msg || 'Error adding car!');
+           
         }
+
     };
 
     const handleDeleteSubmit = async (e: FormEvent) => {
@@ -100,7 +114,7 @@ const CarAdd: React.FC = () => {
                 number: deleteNumber
             }
         });
-        
+
         if (response.status === 200) {
             toast.success(response.data.message || 'Car deleted successfully!');
             setDeleteNumber('');
@@ -201,7 +215,7 @@ const CarAdd: React.FC = () => {
                     <h2 className="text-2xl font-semibold mb-1 mt-10">Delete Car</h2>
                     <div ref={formRef2} className="w-full mx-auto mt-8 p-6 rounded shadow-md">
                         <form className='grid grid-cols-3'>
-                            
+
                             <div className="mb-4 col-span-1 mx-5">
                                 <label htmlFor='numberPlate' className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Plate Number</label>
                                 <input
@@ -214,7 +228,7 @@ const CarAdd: React.FC = () => {
                                     placeholder="ABC123"
                                     required
                                 />
-                            </div>                         
+                            </div>
 
                             <div className="mb-4 col-span-1 mx-5 mt-2">
                                 <Button width='w-full' height='h-5' text='Delete Car' onClick={handleDeleteSubmit} />
