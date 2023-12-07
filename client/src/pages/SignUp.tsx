@@ -7,7 +7,7 @@ import Button from "../components/Button";
 import SignupAnimation from "../components/SignupAnimation";
 
 const SignUp = () => {
-  const BASE_URL = "";
+  const BASE_URL = "http://localhost:3000";
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -45,6 +45,7 @@ const SignUp = () => {
       if (res.status === 400) {
         throw new Error(msg);
       }
+      console.log(msg);
 
       setLoading(false);
       navigate("/login");
@@ -133,7 +134,7 @@ const SignUp = () => {
               
   
               <div className="mt-7">
-                <Button width='w-full' height='h-5' text='Sign Up' onClick={()=>console.log("Button Clicked")}></Button>
+                <Button width='w-full' height='h-5' text='Sign Up' onClick={handleSubmit}></Button>
 
                 {/* <button
                   type="submit"

@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 
 const constants = require("../constants");
-const { client, logger, passwordSalt, ACCESS_TOKEN_SECRET_KEY } = require("../config");
+const { pool, logger, passwordSalt, ACCESS_TOKEN_SECRET_KEY } = require("../config");
 const { checkAuthentication, getUserDetails, getLocation } = require("../utilities/utility");
 
 /* GET home page. */
@@ -73,6 +73,7 @@ router.post("/register", async function (req, res, next) {
         });
     }
 
+    const client = await pool.connect();
     try {
         // Checking if user with given username exists
         const users = await client.query(
@@ -101,6 +102,8 @@ router.post("/register", async function (req, res, next) {
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 
@@ -145,6 +148,7 @@ router.post("/password/update", checkAuthentication, async function (req, res, n
         });
     }
 
+    const client = await pool.connect();
     try {
         const userDetails = await getUserDetails(req.headers.token.username);
         passMatch = await bcrypt.compare(req.body.old_password, userDetails.rows[0][constants.USERS_PASSWORD]);
@@ -170,6 +174,8 @@ router.post("/password/update", checkAuthentication, async function (req, res, n
             error: "Internal Server Error",
             msg: "Internal Server Error. Please try again in some time!",
         });
+    } finally {
+        client.release();
     }
 });
 

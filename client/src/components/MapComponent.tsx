@@ -1,6 +1,6 @@
 // MapComponent.tsx
-import React, { useState } from 'react';
-import { GoogleMap, Marker, Polyline, useJsApiLoader } from '@react-google-maps/api';
+import React, { useState, useEffect } from 'react';
+import { GoogleMap, Marker, DirectionsService, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api';
 
 interface MapComponentProps {
     srcLat: number | null;
@@ -26,8 +26,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ srcLat, srcLng, destLat, de
     });
 
     const [map, setMap] = useState(null);
+    const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
 
-    const onLoad = React.useCallback((map: any) => setMap(map), [])
+    const onLoad = React.useCallback((map: any) => setMap(map), []);
 
     const onUnmount = React.useCallback(() => setMap(null), []);
 
@@ -36,42 +37,62 @@ const MapComponent: React.FC<MapComponentProps> = ({ srcLat, srcLng, destLat, de
         { lat: destLat, lng: destLng, label: 'Destination' }
     ];
 
-    const path = [
-        { lat: srcLat, lng: srcLng },
-        { lat: destLat, lng: destLng }
-      ].filter(point => point.lat !== null && point.lng !== null)
-      .map(point => ({ lat: point.lat!, lng: point.lng! }));
+    useEffect(() => {
+        if (srcLat && srcLng && destLat && destLng) {
+            const directionsService = new window.google.maps.DirectionsService();
 
-    if (!isLoaded) return <><div>Loading...</div></>;
+            directionsService.route(
+                {
+                    origin: { lat: srcLat, lng: srcLng },
+                    destination: { lat: destLat, lng: destLng },
+                    travelMode: window.google.maps.TravelMode.DRIVING
+                },
+                (result, status) => {
+                    if (status === window.google.maps.DirectionsStatus.OK) {
+                        setDirections(result);
+                    } else {
+                        console.error(`Error fetching directions: ${status}`);
+                    }
+                }
+            );
+        }
+    }, [srcLat, srcLng, destLat, destLng]);
+
+    if (!isLoaded) return <div>Loading...</div>;
 
     return (
-        <>
-            <GoogleMap
-                mapContainerStyle={containerStyle}
-                center={center}
-                zoom={12}
-                options={{
-                    zoomControl: false,
-                    streetViewControl: false,
-                    fullscreenControl: false,
-                    mapTypeControl: false,
-                    disableDefaultUI: true,
-                }}
-                onLoad={onLoad}
-                onUnmount={onUnmount}
-            >
-                {markers.map((marker) => (
-                    marker.lat && marker.lng &&
-                    <Marker
-                        key={marker.label}
-                        position={{ lat: marker.lat, lng: marker.lng }}
-                        label={marker.label}
-                    />
-                ))}
+        <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={center}
+            zoom={12}
+            options={{
+                zoomControl: false,
+                streetViewControl: false,
+                fullscreenControl: false,
+                mapTypeControl: false,
+                disableDefaultUI: true,
+            }}
+            onLoad={onLoad}
+            onUnmount={onUnmount}
+        >
+            {markers.map((marker) => (
+                marker.lat && marker.lng &&
+                <Marker
+                    key={marker.label}
+                    position={{ lat: marker.lat, lng: marker.lng }}
+                    label={marker.label}
+                />
+            ))}
 
-                {path.length === 2 && <Polyline path={path} options={{ strokeColor: '#FF0000' }} />}
-            </GoogleMap>
-        </>
+            {directions && <DirectionsRenderer 
+                                directions={directions} 
+                                options={{
+                                    polylineOptions: {
+                                        strokeColor: '#1840b8',
+                                    },
+                                }}
+                            />}
+        </GoogleMap>
     );
 };
 

@@ -1,6 +1,6 @@
 require("dotenv").config();
 var path = require("path");
-var { Client } = require("pg");
+var { Pool } = require("pg");
 var winston = require("winston");
 var { transports, format } = require("winston");
 
@@ -34,23 +34,15 @@ var logger = winston.createLogger({
 });
 
 // Database Configurations
-const client = new Client({
+const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
     database: process.env.DB_DATABASE,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
+    max: 10, // Maximum number of clients in the pool
+    idleTimeoutMillis: 30000, // Time a client is allowed to remain idle before being closed
 });
-
-// Connect to the database
-client
-    .connect()
-    .then(() => {
-        logger.info(`Connected to the database`);
-    })
-    .catch((err) => {
-        logger.error(`Error connecting to the database: ${err}`);
-    });
 
 module.exports = {
     // Cahce Configuration
@@ -65,7 +57,7 @@ module.exports = {
 
     // Database & Password config
     passwordSalt: parseInt(process.env.BCRYPT_PASS_SALT),
-    client,
+    pool,
 
     // Logger
     logger,
