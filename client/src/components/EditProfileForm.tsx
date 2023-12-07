@@ -127,8 +127,8 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ handleSaveClick }) =>
      type="text"
      id="first_name"
      name="first_name"
-     value={"Ashish"}
-     // onChange={handleInputChange}
+     value={userDetails.first_name}
+     onChange={handleInputChange}
      className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
      required
    />
@@ -141,8 +141,8 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ handleSaveClick }) =>
      type="text"
      id="last_name"
      name="last_name"
-     value={"Karra"}
-     // onChange={handleInputChange}
+     value={userDetails.last_name_name}
+     onChange={handleInputChange}
      className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
      required
    />
@@ -154,8 +154,8 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ handleSaveClick }) =>
                       type="text" 
                       id="phone_number" 
                       name="phone_number"
-                      value={"phone_number"}
-                      //onChange={handleInputChange}
+                      value={userDetails.phone_number}
+                      onChange={handleInputChange}
                       className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
                       required 
                     />
@@ -168,8 +168,8 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ handleSaveClick }) =>
      type="text"
      id="address"
      name="address"
-     value={"27368ywe9023"}
-     // onChange={handleInputChange}
+     value={userDetails.address}
+     onChange={handleInputChange}
      className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
      required
    />
