@@ -37,12 +37,15 @@ router.post("/details", checkAuthentication, async function (req, res, next) {
             }`
         );
         const driverDetails = await client.query(
-            `SELECT ${constants.USERS_FIRST_NAME}, ${constants.USERS_LAST_NAME}, ${constants.USERS_DRIVER_R}, ${
-                constants.USERS_PHONE_NUMBER
-            } FROM ${constants.USERS_TABLE} WHERE ${constants.USERS_PK} = ${
-                rideDetails.rows[0][constants.RIDE_DRIVER_ID_FK]
-            }`
+            `SELECT U.${constants.USERS_FIRST_NAME}, U.${constants.USERS_LAST_NAME}, U.${constants.USERS_DRIVER_R}, U.${constants.USERS_PHONE_NUMBER}, ST_X(R.${constants.RIDE_SOURCE}::geometry) AS source_latitude, ST_Y(R.${constants.RIDE_SOURCE}::geometry) as source_longitude, ST_X(R.${constants.RIDE_DEST}::geometry) AS dest_latitude, ST_Y(R.${constants.RIDE_DEST}::geometry) as dest_longitude, ${constants.RIDE_SOURCE_ID}, ${constants.RIDE_DEST_ID} FROM ${constants.USERS_TABLE} AS U RIGHT JOIN ${constants.RIDE_TABLE} AS R ON R.${constants.RIDE_DRIVER_ID_FK} = U.${constants.USERS_PK} WHERE R.${constants.RIDE_PK} = ${req.body.ride_id}`
         );
+
+        driverDetails.rows[0][constants.RIDE_D_SOURCE_ID] = await getAddress(
+            driverDetails.rows[0][constants.RIDE_SOURCE_ID]
+        );
+
+        driverDetails.rows[0][constants.RIDE_DEST_ID] = await getAddress(driverDetails.rows[0][constants.RIDE_DEST_ID]);
+
         var userRideDetails;
         var is_driver = false;
         if (rideDetails.rows[0][constants.RIDE_DRIVER_ID_FK] == userDetails.rows[0][constants.USERS_PK]) {
@@ -150,7 +153,51 @@ router.post("/publish", checkAuthentication, async function (req, res, next) {
     }
 });
 
-router.post("/user_review", checkAuthentication, async function (req, res, next) {});
+router.post("/user/review", checkAuthentication, async function (req, res, next) {
+    const expectedParams = ["ride_id", "drating", "dreview"];
+    const missingParams = expectedParams.filter((param) => !(param in req.body));
+
+    if (missingParams.length > 0) {
+        // Respond with an error if there are missing parameters
+        logger.warn(`Request has missing parameters - ${missingParams}`);
+        return res.status(400).json({
+            msg: `Missing parameters: ${missingParams.join(", ")}`,
+        });
+    }
+
+    const client = await pool.connect();
+    try {
+        const rideDetails = await client.query(
+            `SELECT * FROM ${constants.RIDE_D_TABLE} WHERE ${constants.RIDE_D_USERNAME} = '${req.headers.token.username}' AND ${constants.RIDE_D_RID_FK} = ${req.body.ride_id}`
+        );
+        if (rideDetails.rows.length == 0) {
+            logger.info(
+                `Unauthorised access. No such rides with username - '${req.body.username}' and ride_id - '${req.body.ride_id}'`
+            );
+            return res.status(401).json({
+                error: "Unauthorised Access",
+                msg: `User can only review rides scheduled by them`,
+            });
+        }
+        await client.query(
+            `UPDATE ${constants.RIDE_D_TABLE} SET ${constants.RIDE_D_DRATE} = ${req.body.drating}, ${constants.RIDE_D_DREVIEW} = '${req.body.dreview}' WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id} AND ${constants.RIDE_D_USERNAME} = '${req.headers.token.username}'`
+        );
+        logger.info(`Addded rating/review by user - '${req.headers.token.username}' for ride - '${req.body.ride_id}'`);
+        return res.status(200).json({
+            msg: "Review added successfully",
+        });
+    } catch (err) {
+        logger.error(
+            `Error submitting user review by user - '${req.headers.token.username}' for ride - '${req.body.ride_id}' - ${err}`
+        );
+        return res.status(500).json({
+            error: "Internal Server Error",
+            msg: "Internal Server Error. Please try again in some time!",
+        });
+    } finally {
+        client.release();
+    }
+});
 
 router.post("/history", checkAuthentication, async function (req, res, next) {
     const expectedParams = ["is_driver", "completed"];
@@ -370,7 +417,7 @@ router.post("/start", checkAuthentication, async function (req, res, next) {
 });
 
 router.post("/end", checkAuthentication, async function (req, res, next) {
-    const expectedParams = ["ride_id", "username", "crating"];
+    const expectedParams = ["ride_id", "username", "crating", "creview"];
     const missingParams = expectedParams.filter((param) => !(param in req.body));
 
     if (missingParams.length > 0) {
@@ -404,8 +451,28 @@ router.post("/end", checkAuthentication, async function (req, res, next) {
         }
 
         await client.query(
-            `UPDATE ${constants.RIDE_D_TABLE} SET ${constants.RIDE_D_END_TIME} = ${time}, ${constants.RIDE_D_CRATE} = ${req.body.crating} WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id} AND ${constants.RIDE_D_USERNAME} = '${req.body.username}'`
+            `UPDATE ${constants.RIDE_D_TABLE} SET ${constants.RIDE_D_END_TIME} = ${time}, ${constants.RIDE_D_CRATE} = ${req.body.crating}, ${constants.RIDE_D_CREVIEW} = '${req.body.creview}', ${constants.RIDE_D_RIDE_COMPLETED} = true WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id} AND ${constants.RIDE_D_USERNAME} = '${req.body.username}'`
         );
+
+        // Checking if all rides in the ride_id are completed
+        const rides = await client.query(
+            `SELECT * FROM ${constants.RIDE_D_TABLE} WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id}`
+        );
+        var allRidesCompleted = true;
+        for (i = 0; i < rides.rows.length; i++) {
+            if (!rides.rows[i][constants.RIDE_D_RIDE_COMPLETED]) {
+                allRidesCompleted = false;
+                break;
+            }
+        }
+
+        if (allRidesCompleted) {
+            logger.info(`All rides associated with ride_id - '${req.body.ride_id}' is completed`);
+            await client.query(
+                `UPDATE ${constants.RIDE_TABLE} SET ${constants.RIDE_COMPLETED} = true WHERE ${constants.RIDE_PK} = ${req.body.ride_id}`
+            );
+        }
+
         logger.info(`Ride ended for user '${req.body.username}' for ride - '${req.body.ride_id}'`);
         return res
             .status(200)
