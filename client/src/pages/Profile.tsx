@@ -18,11 +18,12 @@ interface ProfileResponse {
     user_rating: number;
 }
 
+
 const Profile = () => {
 
+  const navigate = useNavigate();
   const profileRef = useRef(null);
   const profileImageRef = useRef(null);
-  const navigate = useNavigate();
 
   const { user, token, isAuthenticated, dispatch } = useAuth();
 
@@ -116,6 +117,10 @@ const Profile = () => {
     }
   }, [profileRef, profileImageRef]);
 
+  const handleEditProfileClick = () => {
+    navigate('/edit-profile');
+  };
+
 
 
   return (
@@ -153,6 +158,7 @@ const Profile = () => {
             </div>
           </div>
           <Button width='w-full' height='h-5' text='My Rides' onClick={() => console.log("Button Clicked")} />
+          <Button width='w-full' height='h-5' text='Edit Profile' onClick={handleEditProfileClick} />
         </div>
       </div>
 

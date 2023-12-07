@@ -22,8 +22,9 @@ CREATE TABLE ADDRESS(
     user_id_fk BIGINT REFERENCES USERS(user_id_pk),
     apt_number VARCHAR(20),
     street_name VARCHAR(50),
+    city VARCHAR(50),
     state VARCHAR(20),
-    zip_code INT,
+    zip_code VARCHAR(7),
     country VARCHAR(50),
     coordinates GEOGRAPHY(POINT, 4326)
 );

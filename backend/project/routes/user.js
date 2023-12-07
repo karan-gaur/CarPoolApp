@@ -24,6 +24,37 @@ router.get("/profile", checkAuthentication, async function (req, res, next) {
     }
 });
 
+router.get("/stats", checkAuthentication, async function (req, res, next) {
+    const client = await pool.connect();
+    try {
+        userDetails = await getUserDetails(req.headers.token.username);
+        const drives = await client.query(
+            `SELECT COUNT(*) AS drives FROM ${constants.RIDE_TABLE} WHERE ${constants.RIDE_DRIVER_IF_FK} = ${
+                userDetails.rows[0][constants.USERS_PK]
+            }`
+        );
+        const rides = await client.query(
+            `SELECT COUNT(*) AS rides FROM ${constants.RIDE_D_TABLE} WHERE ${constants.RIDE_D_UID_FK} = ${
+                userDetails.rows[0][constants.USERS_PK]
+            }`
+        );
+
+        logger.info(`Fetched user ride stats for user - '${req.headers.token.username}'`);
+        return res.status(200).json({
+            drives: drives.rows[0].drives,
+            rides: rides.rows[0].rides,
+        });
+    } catch (err) {
+        logger.error(`Error fetching user's stat for user - ${req.headers.token.username} - ${err}`);
+        return res.status(500).json({
+            error: "Internal Server Error",
+            msg: "Internal Server Error. Please try again in some time!",
+        });
+    } finally {
+        client.release();
+    }
+});
+
 router.post("/profile", checkAuthentication, async function (req, res, next) {
     // Define the expected parameters
     const expectedParams = ["first_name", "last_name", "phone_number"];
@@ -59,7 +90,7 @@ router.get("/address", checkAuthentication, async function (req, res, next) {
     const client = await pool.connect();
     try {
         const address = await client.query(
-            `SELECT ${constants.ADDRESS_PLACE_ID_PK}, ${constants.ADDRESS_APT_NUMBER}, ${constants.ADDRESS_STREET_NAME}, ${constants.ADDRESS_STATE}, ${constants.ADDRESS_ZIP_CODE}, ${constants.ADDRESS_COUNTRY}, ST_X(${constants.ADDRESS_CORD}::geometry) AS latitude, ST_Y(${constants.ADDRESS_CORD}::geometry) as longitude from ${constants.ADDRESS_TABLE} where ${constants.ADDRESS_USER_ID_FK} = (SELECT ${constants.USERS_PK} FROM ${constants.USERS_TABLE} where ${constants.USERS_USERNAME} = '${req.headers.token.username}')`
+            `SELECT ${constants.ADDRESS_PLACE_ID_PK}, ${constants.ADDRESS_APT_NUMBER}, ${constants.ADDRESS_STREET_NAME}, ${constants.ADDRESS_CITY}, ${constants.ADDRESS_STATE}, ${constants.ADDRESS_ZIP_CODE}, ${constants.ADDRESS_COUNTRY}, ST_X(${constants.ADDRESS_CORD}::geometry) AS latitude, ST_Y(${constants.ADDRESS_CORD}::geometry) as longitude from ${constants.ADDRESS_TABLE} where ${constants.ADDRESS_USER_ID_FK} = (SELECT ${constants.USERS_PK} FROM ${constants.USERS_TABLE} where ${constants.USERS_USERNAME} = '${req.headers.token.username}')`
         );
         logger.info(`Fetched all addresses for user - ${req.headers.token.username}`);
         return res.status(200).json({ address: address.rows });
@@ -97,7 +128,7 @@ router.delete("/address", checkAuthentication, async function (req, res, next) {
 });
 
 router.post("/address/add", checkAuthentication, async function (req, res, next) {
-    const expectedParams = ["apt_number", "street_name", "state", "zip_code", "country", "place_id"];
+    const expectedParams = ["apt_number", "street_name", "state", "city", "zip_code", "country", "place_id"];
     const missingParams = expectedParams.filter((param) => !(param in req.body));
 
     if (missingParams.length > 0) {
@@ -122,13 +153,13 @@ router.post("/address/add", checkAuthentication, async function (req, res, next)
             await client.query(
                 `INSERT INTO ADDRESS(${constants.ADDRESS_PLACE_ID_PK}, ${constants.ADDRESS_USER_ID_FK}, ${
                     constants.ADDRESS_APT_NUMBER
-                }, ${constants.ADDRESS_STREET_NAME}, ${constants.ADDRESS_STATE}, ${constants.ADDRESS_ZIP_CODE}, ${
-                    constants.ADDRESS_COUNTRY
-                }, ${constants.ADDRESS_CORD}) VALUES ('${req.body.place_id}', ${
+                }, ${constants.ADDRESS_STREET_NAME}, ${constants.ADDRESS_CITY}, ${constants.ADDRESS_STATE}, ${
+                    constants.ADDRESS_ZIP_CODE
+                }, ${constants.ADDRESS_COUNTRY}, ${constants.ADDRESS_CORD}) VALUES ('${req.body.place_id}', ${
                     userDetails.rows[0][constants.USERS_PK]
-                }, '${req.body.apt_number}', '${req.body.street_name}', '${req.body.state}', '${req.body.zip_code}', '${
-                    req.body.country
-                }', ST_GeographyFromText('POINT(${location.lat} ${location.lng})'))`
+                }, '${req.body.apt_number}', '${req.body.street_name}', '${req.body.city}', '${req.body.state}', '${
+                    req.body.zip_code
+                }', '${req.body.country}', ST_GeographyFromText('POINT(${location.lat} ${location.lng})'))`
             );
         }
         logger.info(`Address added successfully for user ${req.headers.token.username}`);
