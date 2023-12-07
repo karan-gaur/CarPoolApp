@@ -142,7 +142,9 @@ const Profile = () => {
     navigate('/edit-profile');
   };
 
-
+  const handleRidesClick = () => {
+    navigate('/rides');
+  };
 
   return (
     <>
@@ -178,7 +180,7 @@ const Profile = () => {
               <div>Rider Rating</div>
             </div>
           </div>
-          <Button width='w-full' height='h-5' text='My Rides' onClick={() => console.log("Button Clicked")} />
+          <Button width='w-full' height='h-5' text='My Rides' onClick={handleRidesClick} />
           <Button width='w-full' height='h-5' text='Edit Profile' onClick={handleEditProfileClick} />
         </div>
       </div>

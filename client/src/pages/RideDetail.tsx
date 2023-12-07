@@ -8,11 +8,20 @@ import { useAuth } from '../hooks/useAuth';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
+interface LongLatType {
+    lat: number,
+    lng: number
+}
+
 const RideDetail = () => {
     const navigate = useNavigate();
     const { user, token, isAuthenticated, dispatch } = useAuth();
     const { id } = useParams();
     const [data, setData] = useState<any>(null);
+    const [ srcCor, setSrcCor ] = useState<LongLatType | null>(null);
+    const [ destCor, setDestCor ] = useState<LongLatType | null>(null);
+
+
 
     const fetchDetails = async () => {
         console.log('id', id);
@@ -27,6 +36,14 @@ const RideDetail = () => {
             });
 
         setData(res.data);
+        setSrcCor({
+            lat: res.data.driverDetails[0].source_latitude,
+            lng: res.data.driverDetails[0].source_longitude
+        });
+        setDestCor({
+            lat: res.data.driverDetails[0].dest_latitude,
+            lng: res.data.driverDetails[0].dest_longitude
+        });
     };
 
     useEffect(() => {
@@ -48,15 +65,7 @@ const RideDetail = () => {
         }
     }, [isAuthenticated, token, user, navigate, dispatch]);
 
-    const srcCor = {
-        lat: 40.735657,
-        lng: -74.172363
-    };
-
-    const destCor = {
-        "lat": 40.7440691,
-        "lng": -74.17928449999999
-    }
+    
 
     const tripStart = async (username: string) => {
         const res = await axios.post('http://localhost:3000/ride/start',
@@ -98,7 +107,7 @@ const RideDetail = () => {
             <Transition />
             <div className='min-h-screen bg-black absolute z-10 w-screen flex flex-col items-center'>
                 <div className='flex flex-col w-full'>
-                    <MapComponent srcLat={srcCor.lat} srcLng={srcCor.lng} destLat={destCor.lat} destLng={destCor.lng} />
+                    <MapComponent srcLat={srcCor?.lat || 0} srcLng={srcCor?.lng || 0} destLat={destCor?.lat || 0} destLng={destCor?.lng || 0} />
                     <div className='mt-10 px-52 max-md:px-20'>
                         <div className="bg-gray-800 grid grid-cols-2 w-full p-6 rounded-lg shadow-lg text-white mb-28">
                             {data?.is_driver && (
