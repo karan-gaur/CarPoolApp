@@ -5,7 +5,27 @@ const { checkAuthentication, getCarDetails, getUserDetails, getLocation, getAddr
 
 var router = express.Router();
 
-router.post("/details", checkAuthentication, async function (req, res, next) {});
+router.post("/details", checkAuthentication, async function (req, res, next) {
+    const expectedParams = [];
+    const missingParams = expectedParams.filter((param) => !(param in req.body));
+
+    if (missingParams.length > 0) {
+        // Respond with an error if there are missing parameters
+        logger.warn(`Request has missing parameters - ${missingParams}`);
+        return res.status(400).json({
+            msg: `Missing parameters: ${missingParams.join(", ")}`,
+        });
+    }
+
+    const client = await pool.connect();
+    try {
+        const userDetails = await getUserDetails(req.headers.token.username);
+        await client.query(``);
+    } catch (err) {
+    } finally {
+        client.release();
+    }
+});
 
 router.post("/publish", checkAuthentication, async function (req, res, next) {
     const expectedParams = ["car_number", "departure_time", "source_addr", "dest_addr", "seats_available"];
@@ -125,7 +145,7 @@ router.post("/history", checkAuthentication, async function (req, res, next) {
                     activeRides.rows[i][constants.RIDE_DEST_ID]
                 );
         }
-        return res.status(200).json({ activeRides: activeRides.rows });
+        return res.status(200).json({ rides: activeRides.rows });
     } catch (err) {
         logger.error(`Error finding active rides for user - ${req.headers.token.username} - ${err}`);
         return res.status(500).json({
@@ -154,7 +174,7 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
         const source = await getLocation(req.body.source_addr);
         const dest = await getLocation(req.body.dest_addr);
         const userDetails = await getUserDetails(req.headers.token.username);
-        const driverDetails = await client.query(
+        const rideDetails = await client.query(
             `SELECT ${constants.RIDE_PK}, ${constants.RIDE_DEPARTURE}, ${constants.RIDE_SEATS}, ${
                 constants.CARS_MAKE
             }, ${constants.CARS_MODEL}, ${constants.CARS_COLOR} from ${
@@ -171,7 +191,7 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
         );
         logger.info(`Fetched all available ride for user - ${req.headers.token.username}`);
 
-        if (driverDetails.rows.length == 0) {
+        if (rideDetails.rows.length == 0) {
             logger.info(`No drivers available for user's request`);
             return res.status(404).json({ msg: "There are no driver available for your preferences" });
         }
@@ -187,14 +207,14 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
         await client.query(
             `UPDATE ${constants.RIDE_TABLE} SET ${constants.RIDE_SEATS} = ${constants.RIDE_SEATS}-1 WHERE ${
                 constants.RIDE_PK
-            } = '${driverDetails.rows[0][constants.RIDE_PK]}'`
+            } = '${rideDetails.rows[0][constants.RIDE_PK]}'`
         );
         await client.query(
             `INSERT INTO ${constants.RIDE_D_TABLE} (${constants.RIDE_D_RID_FK}, ${constants.RIDE_D_UID_FK}, ${
                 constants.RIDE_D_USERNAME
             }, ${constants.RIDE_D_SOURCE}, ${constants.RIDE_D_SOURCE_ID}, ${constants.RIDE_D_DEST}, ${
                 constants.RIDE_D_DEST_ID
-            }) VALUES (${driverDetails.rows[0][constants.RIDE_PK]}, ${userDetails.rows[0][constants.USERS_PK]}, '${
+            }) VALUES (${rideDetails.rows[0][constants.RIDE_PK]}, ${userDetails.rows[0][constants.USERS_PK]}, '${
                 req.headers.token.username
             }', ST_GeographyFromText('POINT(${source.lat} ${source.lng})'), '${
                 req.body.source_addr
@@ -203,10 +223,22 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
         await client.query(`COMMIT;`);
         logger.info(
             `Ride successfully booked for user - '${req.headers.token.username}'. RIDE_ID - '${
-                driverDetails.rows[0][constants.RIDE_PK]
+                rideDetails.rows[0][constants.RIDE_PK]
             }'`
         );
-        return res.status(200).json({ msg: `Ride booked` });
+
+        const driverInfo = await client.query(
+            `SELECT ${constants.USERS_FIRST_NAME}, ${constants.USERS_LAST_NAME}, ${constants.USERS_DRIVER_R} from ${
+                constants.USERS_TABLE
+            } WHERE ${constants.USERS_PK} = ${rideDetails.rows[0][constants.RIDE_DRIVER_IF_FK]}`
+        );
+        return res.status(200).json({
+            msg: `Ride booked`,
+            rideDetails: {
+                rideID: rideDetails.rows[0][constants.RIDE_PK],
+                driverInfo: driverInfo,
+            },
+        });
     } catch (err) {
         await client.query(`ROLLBACK`);
         logger.error(`Error scheduling rides for user - ${req.headers.token.username} - ${err}`);
