@@ -7,6 +7,9 @@ import gsap from 'gsap';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+
 
 
 interface CarAddState {
@@ -22,9 +25,11 @@ interface CarDeleteState {
 }
 
 const CarAdd: React.FC = () => {
-
+    const navigate = useNavigate();
     const formRef1 = useRef<HTMLDivElement | null>(null);
     const formRef2 = useRef<HTMLDivElement | null>(null);
+    const { user, token, isAuthenticated, dispatch } = useAuth();
+    
 
     useEffect(() => {
         const form1 = formRef1.current;
@@ -126,6 +131,25 @@ const CarAdd: React.FC = () => {
     const handleDeleteChange = (e: ChangeEvent<HTMLInputElement>) => {
         setDeleteNumber(e.target.value);
     };
+    useEffect(() => {
+        const isToken = localStorage.getItem("token");
+        console.log('isToken', isToken);
+        if(!isToken) {
+          console.log("Not Authenticated");
+          navigate("/login");
+        } else {
+          dispatch({
+            type: "LOGIN_SUCCESS",
+            payload: {
+              user: user,
+              token: isToken,
+            },
+          });
+    
+         
+    
+        }
+    }, [isAuthenticated, token, user]);
 
     return (
         <>

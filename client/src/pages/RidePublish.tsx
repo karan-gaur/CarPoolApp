@@ -1,10 +1,12 @@
 import Transition from '../components/Transition';
 import Buttton from '../components/Button';
 import usePlacesAutocomplete from 'use-places-autocomplete';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import MapComponent from '../components/MapComponent';
 import { getCoordinatesFromAddress1, getCoordinatesFromAddress2 } from '../services/googleApiService';
 import './RideSearch.css';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface FormDataType {
   make: string,
@@ -30,7 +32,8 @@ interface CorsType {
 }
 
 const RidePublish = () => {
-
+  const navigate = useNavigate();
+    const { user, token, isAuthenticated, dispatch } = useAuth();
   const {
     ready: readyFrom,
     value: valueFrom,
@@ -121,6 +124,26 @@ const RidePublish = () => {
       console.error('Error fetching place details:', error);
     }
   };
+
+  useEffect(() => {
+    const isToken = localStorage.getItem("token");
+    console.log('isToken', isToken);
+    if(!isToken) {
+      console.log("Not Authenticated");
+      navigate("/login");
+    } else {
+      dispatch({
+        type: "LOGIN_SUCCESS",
+        payload: {
+          user: user,
+          token: isToken,
+        },
+      });
+
+     
+
+    }
+}, [isAuthenticated, token, user, navigate, dispatch]);
 
   return (
     <>

@@ -88,7 +88,7 @@ const Profile = () => {
       fetchUserAddressData();
       
     }
-  }, [isAuthenticated, token, user]);
+  }, [isAuthenticated, token, user, navigate, dispatch]);
 
   useEffect(() => {
     const profileElement = profileRef.current;

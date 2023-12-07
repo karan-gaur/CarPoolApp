@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import MapComponent from '../components/MapComponent';
 import { getCoordinatesFromAddress1, getCoordinatesFromAddress2 } from '../services/googleApiService';
 import './RideSearch.css';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const containerStyle = {
   width: '100%',
@@ -22,7 +24,8 @@ interface CorsType {
 }
 
 const RideSearch = () => {
-
+  const navigate = useNavigate();
+  const { user, token, isAuthenticated, dispatch } = useAuth();
   const {
     ready: readyFrom,
     value: valueFrom,
@@ -140,6 +143,27 @@ const RideSearch = () => {
       });
     }
   }, []);
+  
+  useEffect(() => {
+    const isToken = localStorage.getItem("token");
+    console.log('isToken', isToken);
+    if(!isToken) {
+      console.log("Not Authenticated");
+      navigate("/login");
+    } else {
+      dispatch({
+        type: "LOGIN_SUCCESS",
+        payload: {
+          user: user,
+          token: isToken,
+        },
+      });
+
+     
+
+    }
+}, [isAuthenticated, token, user, navigate, dispatch]);
+  
 
   return (
     <>

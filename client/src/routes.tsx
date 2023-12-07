@@ -10,7 +10,7 @@ import RideDetail from './pages/RideDetail';
 import CarAdd from './pages/CarAdd';
 import Admin from './pages/Admin';
 import EditProfile from './pages/EditProfile';
-
+import Contact from './pages/Contact';
 export const publicRoutes = [
     {
         path: '/',
@@ -59,5 +59,9 @@ export const publicRoutes = [
     {
         path: '/edit-profile',
         element: <EditProfile />
+    },
+    {
+        path: '/contact',
+        element: <Contact />
     }
 ];

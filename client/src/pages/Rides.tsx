@@ -1,8 +1,30 @@
 import Transition from "../components/Transition";
 import ThreejsPlane from "../components/ImagePlane";
 import "./Rides.css"
-
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from "react";
 const Rides = () => {
+  const navigate = useNavigate();
+  const { user, token, isAuthenticated, dispatch } = useAuth();
+
+  useEffect(() => {
+    const isToken = localStorage.getItem("token");
+    console.log('isToken', isToken);
+    if (!isToken) {
+      console.log("Not Authenticated");
+      navigate("/login");
+    } else {
+      dispatch({
+        type: "LOGIN_SUCCESS",
+        payload: {
+          user: user,
+          token: isToken,
+        },
+      });
+    }
+  }, [isAuthenticated, token, user, navigate, dispatch]);
+
   return (
     <>
       <Transition />

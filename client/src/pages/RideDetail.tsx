@@ -4,9 +4,12 @@ import Transition from '../components/Transition';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import MapComponent from '../components/MapComponent';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const RideDetail = () => {
-
+    const navigate = useNavigate();
+    const { user, token, isAuthenticated, dispatch } = useAuth();
     const mapRef = useRef<HTMLDivElement | null>(null);
     const contentRef = useRef<HTMLDivElement | null>(null);
 
@@ -27,6 +30,26 @@ const RideDetail = () => {
             delay: 1
         });
     }, []);
+
+    useEffect(() => {
+        const isToken = localStorage.getItem("token");
+        console.log('isToken', isToken);
+        if(!isToken) {
+          console.log("Not Authenticated");
+          navigate("/login");
+        } else {
+          dispatch({
+            type: "LOGIN_SUCCESS",
+            payload: {
+              user: user,
+              token: isToken,
+            },
+          });
+    
+         
+    
+        }
+    }, [isAuthenticated, token, user, navigate, dispatch]);
 
     const srcCor = {
         lat: 40.735657,
