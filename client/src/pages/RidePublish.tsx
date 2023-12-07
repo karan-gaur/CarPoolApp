@@ -2,17 +2,15 @@ import Transition from '../components/Transition';
 import Buttton from '../components/Button';
 import usePlacesAutocomplete from 'use-places-autocomplete';
 import { useCallback, useEffect, useState } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
 import MapComponent from '../components/MapComponent';
-import { getCoordinatesFromAddress1, getCoordinatesFromAddress2 } from '../services/googleApiService';
+import { getCoordinatesFromAddress } from '../services/googleApiService';
 import './RideSearch.css';
+import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 interface FormDataType {
-  make: string,
-  model: string,
-  plate: string,
-  seats: string,
   date: string,
 }
 
@@ -57,16 +55,33 @@ const RidePublish = () => {
   });
 
   const [formData, setFormData] = useState<FormDataType>({
-    make: '',
-    model: '',
-    plate: '',
-    seats: '',
     date: '',
   });
 
   const [srcCor, setSrcCor] = useState<CorsType>({ lat: null, lng: null });
   const [destCor, setDestCor] = useState<CorsType>({ lat: null, lng: null });
+  const [carList, setCarList] = useState<any[]>([]);
+  const [selectedCar, setSelectedCar] = useState<string>(carList.length > 0 ? carList[0] : '');
+  const [src, setSrc] = useState<string>('');
+  const [dest, setDest] = useState<string>('');
 
+  const getCars = async () => {
+    const res = await axios.get('http://localhost:3000/cars', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    const cars = res.data.cars.map((car: any) => {
+      return `${car.make}_${car.model}_${car.number}_${car.seats}`;
+    });
+    setCarList(cars);
+    setSelectedCar(cars.length > 0 ? cars[0] : '');
+  };
+
+  useEffect(() => {
+    getCars();
+  }, []);
 
   const renderSuggestionsFrom = () =>
     suggestionsFrom.data.map((suggestion) => {
@@ -96,19 +111,53 @@ const RidePublish = () => {
       );
     });
 
-  const onRidePublish = () => {
-    console.log('Form Submitted!');
-    console.log(formData);
-    console.log(srcCor);
-    console.log(destCor);
+  const onRidePublish = async () => {
+    try {
+      console.log('Selected car:', selectedCar);
+      const carNumber = selectedCar.split('_')[2];
+      const seats = selectedCar.split('_')[3];
+      
+      const response = await axios.post('http://localhost:3000/ride/publish', {
+        "car_number": carNumber,
+        "departure_time": new Date().getTime(),
+        "seats_available": seats,
+        "source_addr": src,                    // Source addr - NJIT
+        "dest_addr": dest
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+
+
+      if(response.status === 200) {
+        toast.success('Ride published successfully');
+        setFormData({
+          date: '',
+        });
+        setValueFrom('');
+        setValueTo('');
+        setSelectedCar(carList.length > 0 ? carList[0] : '');
+      } else {
+        toast.error('Error publishing ride');
+      }
+
+    } catch (error) {
+      console.error('Error publishing ride:', error);
+      toast.error('Error publishing ride');
+    }
+
   };
 
   const handleSelectFrom = (place_id: string, main_text: string) => async () => {
     try {
       setValueFrom(main_text, false);
       clearSuggestionsFrom();
-      const { lat, lng } = getCoordinatesFromAddress1(place_id);
+      const { lat, lng } = await getCoordinatesFromAddress(place_id);
       setSrcCor({ lat, lng });
+      setSrc(place_id);
     } catch (error) {
       console.error('Error fetching place details:', error);
     }
@@ -118,8 +167,9 @@ const RidePublish = () => {
     try {
       setValueTo(main_text, false);
       clearSuggestionsTo();
-      const { lat, lng } = getCoordinatesFromAddress2(place_id);
+      const { lat, lng } = await getCoordinatesFromAddress(place_id);
       setDestCor({ lat, lng });
+      setDest(place_id);
     } catch (error) {
       console.error('Error fetching place details:', error);
     }
@@ -148,6 +198,7 @@ const RidePublish = () => {
   return (
     <>
       <Transition />
+      <ToastContainer />
       <div className='bg-black min-h-screen absolute z-10 w-screen flex flex-col items-center'>
         <div className='flex flex-col w-full'>
           <MapComponent srcLat={srcCor.lat} srcLng={srcCor.lng} destLat={destCor.lat} destLng={destCor.lng} />
@@ -155,94 +206,48 @@ const RidePublish = () => {
             <div className="grid gap-6 mb-6 grid-cols-2 max-md:grid-cols-1">
               <div className="col-span-1">
                 <label htmlFor="source" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">From?</label>
-                <input 
-                  type="text" 
-                  value={valueFrom} 
-                  onChange={e => setValueFrom(e.target.value)} 
-                  id="source" 
-                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
-                  placeholder="271 Van Wagenene Ave, Jersey City" 
-                  required 
+                <input
+                  type="text"
+                  value={valueFrom}
+                  onChange={e => setValueFrom(e.target.value)}
+                  id="source"
+                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  placeholder="271 Van Wagenene Ave, Jersey City"
+                  required
                 />
                 {suggestionsFrom.status === 'OK' && <ul>{renderSuggestionsFrom()}</ul>}
               </div>
               <div className="col-span-1">
                 <label htmlFor="destination" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Where To?</label>
-                <input 
-                  type="text" 
-                  value={valueTo} 
-                  onChange={e => setValueTo(e.target.value)} 
-                  id="destination" 
-                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
-                  placeholder="NJIT Campus Center" 
-                  required 
+                <input
+                  type="text"
+                  value={valueTo}
+                  onChange={e => setValueTo(e.target.value)}
+                  id="destination"
+                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  placeholder="NJIT Campus Center"
+                  required
                 />
                 {suggestionsTo.status === 'OK' && <ul>{renderSuggestionsTo()}</ul>}
               </div>
             </div>
 
-            <div className="grid gap-6 mb-6 grid-cols-3 max-md:grid-cols-1">
+            <div className="grid gap-6 mb-6 grid-cols-2 max-md:grid-cols-1">
               <div className="col-span-1">
-                <label htmlFor="make" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Car Make</label>
-                <input 
-                  type="text" 
-                  value={formData.make} 
-                  onChange={(e) => (
-                    setFormData((prev) => ({ ...prev, make: e.target.value }))
-                  )}                  
-                  id="make" 
-                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
-                  placeholder="Toyota" 
-                  required 
-                />
-              </div>
-              <div className="col-span-1">
-                <label htmlFor="model" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Car Model</label>
-                <input 
-                  type="text" 
-                  value={formData.model} 
-                  onChange={(e) => (
-                    setFormData((prev) => ({ ...prev, model: e.target.value }))
-                  )}                  
-                  id="model" 
-                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
-                  placeholder="Camry" 
-                  required 
-                />
-              </div>
-              <div className="col-span-1">
-                <label htmlFor="plateno" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Car Plate Number</label>
-                <input 
-                  type="text" 
-                  value={formData.plate} 
-                  onChange={(e) => (
-                    setFormData((prev) => ({ ...prev, seats: e.target.value }))
-                  )}                  
-                  id="plateno" 
-                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
-                  placeholder="C90ELE" 
-                  required 
-                />
-              </div>              
-            </div>
-
-            <div className="grid gap-6 mb-6 grid-cols-3 max-md:grid-cols-1">
-              <div className="col-span-1">
-                <label htmlFor="seats" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">No of Seats Required</label>
-                <input 
-                  value={formData.seats}
-                  onChange={(e) => (
-                    setFormData((prev) => ({ ...prev, seats: e.target.value }))
-                  )}
-                  type="text" 
-                  id="seats" 
-                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
-                  placeholder="No of Seats" 
-                  required 
-                />
-              </div>
-              <div className="col-span-1 mt-2 max-md:hidden">
-                <Buttton width='w-full' height='h-5' onClick={onRidePublish} text={'Publish'} />
+                <label htmlFor="car" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select Car</label>
+                <select
+                  id="car"
+                  value={selectedCar}
+                  onChange={(e) => setSelectedCar(e.target.value)}
+                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                  required
+                >
+                  {carList.map((car, index) => (
+                    <option key={index} value={car}>
+                      {car}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="col-span-1">
                 <label htmlFor="date" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date</label>
@@ -258,7 +263,11 @@ const RidePublish = () => {
                   required
                 />
               </div>
-              <div className="col-span-1 mt-2 md:hidden">
+            </div>
+            <div className="grid gap-6 mb-6 grid-cols-3 max-md:grid-cols-1">
+              <div className="col-span-1 mt-2">
+              </div>
+              <div className="col-span-1 mt-2">
                 <Buttton width='w-full' height='h-5' onClick={onRidePublish} text={'Publish'} />
               </div>
             </div>
