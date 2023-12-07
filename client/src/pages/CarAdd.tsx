@@ -17,14 +17,28 @@ interface CarAddState {
     color: string
 }
 
+interface CarDeleteState {
+    number: string
+}
+
 const CarAdd: React.FC = () => {
 
-    const formRef = useRef<HTMLDivElement | null>(null);
+    const formRef1 = useRef<HTMLDivElement | null>(null);
+    const formRef2 = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        const form = formRef.current;
+        const form1 = formRef1.current;
+        const form2 = formRef2.current;
 
-        gsap.from(form, {
+        gsap.from(form1, {
+            duration: 1,
+            opacity: 0,
+            y: '-100%',
+            ease: 'power4.out',
+            delay: 1
+        });
+
+        gsap.from(form2, {
             duration: 1,
             opacity: 0,
             y: '100%',
@@ -41,6 +55,8 @@ const CarAdd: React.FC = () => {
         model: '',
         color: ''
     });
+
+    const [deleteNumber, setDeleteNumber] = useState<string>('');
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -74,6 +90,29 @@ const CarAdd: React.FC = () => {
         }
     };
 
+    const handleDeleteSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        const response = await axios.delete(`http://localhost:3000/cars`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            data: {
+                number: deleteNumber
+            }
+        });
+        
+        if (response.status === 200) {
+            toast.success(response.data.message || 'Car deleted successfully!');
+            setDeleteNumber('');
+        } else {
+            toast.error(response.data.message || 'Error deleting car!');
+        }
+    };
+
+    const handleDeleteChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setDeleteNumber(e.target.value);
+    };
+
     return (
         <>
             <ToastContainer />
@@ -84,8 +123,8 @@ const CarAdd: React.FC = () => {
                     Add Car
                 </div>
                 <div className='flex flex-col z-10 w-3/5'>
-                    <h2 className="text-2xl font-semibold mb-4">Car Information</h2>
-                    <div ref={formRef} className="w-full mx-auto mt-8 p-6 rounded shadow-md">
+                    <h2 className="text-2xl font-semibold mb-1">Car Information</h2>
+                    <div ref={formRef1} className="w-full mx-auto mt-8 p-6 rounded shadow-md">
                         <form className='grid grid-cols-3'>
                             <div className="mb-4 col-span-1 mx-5">
                                 <label htmlFor='seats' className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Seats</label>
@@ -156,6 +195,29 @@ const CarAdd: React.FC = () => {
                                     placeholder="Black"
                                     required
                                 />
+                            </div>
+                        </form>
+                    </div>
+                    <h2 className="text-2xl font-semibold mb-1 mt-10">Delete Car</h2>
+                    <div ref={formRef2} className="w-full mx-auto mt-8 p-6 rounded shadow-md">
+                        <form className='grid grid-cols-3'>
+                            
+                            <div className="mb-4 col-span-1 mx-5">
+                                <label htmlFor='numberPlate' className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Plate Number</label>
+                                <input
+                                    type="text"
+                                    name='numberPlate'
+                                    value={deleteNumber}
+                                    onChange={handleDeleteChange}
+                                    id="planumberPlatete"
+                                    className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                    placeholder="ABC123"
+                                    required
+                                />
+                            </div>                         
+
+                            <div className="mb-4 col-span-1 mx-5 mt-2">
+                                <Button width='w-full' height='h-5' text='Delete Car' onClick={handleDeleteSubmit} />
                             </div>
                         </form>
                     </div>
