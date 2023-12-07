@@ -18,6 +18,7 @@ module.exports = {
     ADDRESS_PLACE_ID_PK: "place_id_pk",
     ADDRESS_USER_ID_FK: "user_id_fk",
     ADDRESS_APT_NUMBER: "apt_number",
+    ADDRESS_CITY: "city",
     ADDRESS_STREET_NAME: "street_name",
     ADDRESS_STATE: "state",
     ADDRESS_ZIP_CODE: "zip_code",

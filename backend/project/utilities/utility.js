@@ -78,8 +78,8 @@ async function getLocation(place_id) {
 }
 
 async function getCarDetails(user_id, number) {
+    const client = await pool.connect();
     try {
-        const client = await client.connect();
         const carDetails = await client.query(
             `SELECT * FROM ${constants.CARS_TABLE} WHERE ${constants.CARS_NUMBER} = '${number}' AND ${constants.CARS_USER_ID_FK} = ${user_id}`
         );
