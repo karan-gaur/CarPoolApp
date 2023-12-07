@@ -4,10 +4,14 @@ import ThreejsPlane from '../components/ImagePlane';
 import Transition from '../components/Transition';
 import Button from '../components/Button';
 import gsap from 'gsap';
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 interface CarAddState {
+    number: string,
     seats: number,
-    plate: string,
     make: string,
     model: string,
     color: string
@@ -32,7 +36,7 @@ const CarAdd: React.FC = () => {
 
     const [formData, setFormData] = useState<CarAddState>({
         seats: 0,
-        plate: '',
+        number: '',
         make: '',
         model: '',
         color: ''
@@ -46,14 +50,33 @@ const CarAdd: React.FC = () => {
         }));
     };
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        // Handle form submission logic here
-        console.log(formData);
+        const response = await axios.post('http://localhost:3000/cars', formData, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        }
+        );
+        
+        if (response.status === 200) {
+            toast.success('Car added successfully!');
+            setFormData({
+                seats: 0,
+                number: '',
+                make: '',
+                model: '',
+                color: ''
+            });
+        } else {
+            toast.error(response.data.message || 'Error adding car!');
+        }
     };
 
     return (
         <>
+            <ToastContainer />
             <Transition />
             <div className='min-h-screen bg-black absolute z-10 w-screen flex flex-col items-center'>
                 <ThreejsPlane />
@@ -63,7 +86,7 @@ const CarAdd: React.FC = () => {
                 <div className='flex flex-col z-10 w-3/5'>
                     <h2 className="text-2xl font-semibold mb-4">Car Information</h2>
                     <div ref={formRef} className="w-full mx-auto mt-8 p-6 rounded shadow-md">
-                        <form onSubmit={handleSubmit} className='grid grid-cols-3'>
+                        <form className='grid grid-cols-3'>
                             <div className="mb-4 col-span-1 mx-5">
                                 <label htmlFor='seats' className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Seats</label>
                                 <input
@@ -81,8 +104,8 @@ const CarAdd: React.FC = () => {
                                 <label htmlFor='plate' className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Plate Number</label>
                                 <input
                                     type="text"
-                                    name='plate'
-                                    value={formData.plate}
+                                    name='number'
+                                    value={formData.number}
                                     onChange={handleChange}
                                     id="plate"
                                     className="input-container border border-solid border-white text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -116,12 +139,9 @@ const CarAdd: React.FC = () => {
                                     required
                                 />
                             </div>
-                            
-                            <div className="mb-4 col-span-1 mx-5 mt-2">
-                                <Button width='w-full' height='h-5' text='Add Car' onClick={function (e?: any): void {
-                                    throw new Error('Function not implemented.');
-                                } } />
 
+                            <div className="mb-4 col-span-1 mx-5 mt-2">
+                                <Button width='w-full' height='h-5' text='Add Car' onClick={handleSubmit} />
                             </div>
 
                             <div className="mb-4 col-span-1 mx-5">
@@ -137,8 +157,6 @@ const CarAdd: React.FC = () => {
                                     required
                                 />
                             </div>
-                            
-                                
                         </form>
                     </div>
                 </div>
