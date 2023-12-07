@@ -37,12 +37,15 @@ router.post("/details", checkAuthentication, async function (req, res, next) {
             }`
         );
         const driverDetails = await client.query(
-            `SELECT ${constants.USERS_FIRST_NAME}, ${constants.USERS_LAST_NAME}, ${constants.USERS_DRIVER_R}, ${
-                constants.USERS_PHONE_NUMBER
-            } FROM ${constants.USERS_TABLE} WHERE ${constants.USERS_PK} = ${
-                rideDetails.rows[0][constants.RIDE_DRIVER_ID_FK]
-            }`
+            `SELECT U.${constants.USERS_FIRST_NAME}, U.${constants.USERS_LAST_NAME}, U.${constants.USERS_DRIVER_R}, U.${constants.USERS_PHONE_NUMBER}, ST_X(R.${constants.RIDE_SOURCE}::geometry) AS source_latitude, ST_Y(R.${constants.RIDE_SOURCE}::geometry) as source_longitude, ST_X(R.${constants.RIDE_DEST}::geometry) AS dest_latitude, ST_Y(R.${constants.RIDE_DEST}::geometry) as dest_longitude, ${constants.RIDE_SOURCE_ID}, ${constants.RIDE_DEST_ID} FROM ${constants.USERS_TABLE} AS U RIGHT JOIN ${constants.RIDE_TABLE} AS R ON R.${constants.RIDE_DRIVER_ID_FK} = U.${constants.USERS_PK} WHERE R.${constants.RIDE_PK} = ${req.body.ride_id}`
         );
+
+        driverDetails.rows[0][constants.RIDE_D_SOURCE_ID] = await getAddress(
+            driverDetails.rows[0][constants.RIDE_SOURCE_ID]
+        );
+
+        driverDetails.rows[0][constants.RIDE_DEST_ID] = await getAddress(driverDetails.rows[0][constants.RIDE_DEST_ID]);
+
         var userRideDetails;
         var is_driver = false;
         if (rideDetails.rows[0][constants.RIDE_DRIVER_ID_FK] == userDetails.rows[0][constants.USERS_PK]) {
