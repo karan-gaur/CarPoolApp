@@ -8,6 +8,7 @@ import Rides from './pages/Rides';
 import SignUp from './pages/SignUp';
 import RideDetail from './pages/RideDetail';
 import CarAdd from './pages/CarAdd';
+import Admin from './pages/Admin';
 
 export const publicRoutes = [
     {
@@ -49,5 +50,9 @@ export const publicRoutes = [
     {
         path: '/car-add',
         element: <CarAdd />
+    },
+    {
+        path: '/admin',
+        element: <Admin />
     }
 ];

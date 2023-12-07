@@ -3,13 +3,91 @@ import profileImage from '../assets/profileImage.jpg';
 import Transition from '../components/Transition';
 import ThreejsPlane from '../components/ImagePlane';
 import Button from '../components/Button';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { gsap, Power4 } from 'gsap';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+interface ProfileResponse {
+    first_name: string;
+    last_name: string;
+    username: string;
+    phone_number: string;
+    driver_rating: number;
+    user_rating: number;
+}
 
 const Profile = () => {
 
   const profileRef = useRef(null);
   const profileImageRef = useRef(null);
+  const navigate = useNavigate();
+
+  const { user, token, isAuthenticated, dispatch } = useAuth();
+
+  const [profileData, setProfileData] = useState<ProfileResponse | null>(null);
+  const [userAddress, setUserAddress] = useState<string>('');
+
+  const fetchData = useMemo(
+    () => async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log('Profile data:', response.data);
+        setProfileData(response.data);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    },
+    [token]
+  );
+
+  const fetchUserAddressData = useMemo(
+    () => async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/address', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log('Profile data:', response.data);
+        const addressObj = response.data.address[0];
+        const address = `${addressObj.apt_number} ${addressObj.street_name}, ${addressObj.city_name}, ${addressObj.state}, ${addressObj.zip_code}`;
+        setUserAddress(address);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    },
+    [token]
+  );
+  
+
+  useEffect(() => {
+    const isToken = localStorage.getItem("token");
+    console.log('isToken', isToken);
+    if(!isToken) {
+      console.log("Not Authenticated");
+      navigate("/login");
+    } else {
+      dispatch({
+        type: "LOGIN_SUCCESS",
+        payload: {
+          user: user,
+          token: isToken,
+        },
+      });
+
+      fetchData();
+      fetchUserAddressData();
+      
+    }
+  }, [isAuthenticated, token, user]);
 
   useEffect(() => {
     const profileElement = profileRef.current;
@@ -36,7 +114,9 @@ const Profile = () => {
         delay: 1,
       });
     }
-  }, []);
+  }, [profileRef, profileImageRef]);
+
+
 
   return (
     <>
@@ -47,11 +127,11 @@ const Profile = () => {
           <img className='w-44 h-44 rounded-full absolute -bottom-20' src={profileImage}></img>
         </div>
         <div ref={profileRef} className='pt-24 z-10'>
-          <div>@jd0912</div>
-          <div className='text-4xl font-bold'>John Doe</div>
-          <div className='text-lg'>5436768832 | jd0912@test.com</div>
-          <div className='text-lg'></div>
-          <div>Address: 105, Alan Ter Ave, Jersey City, NJ</div>
+          <div>{`@${profileData?.first_name[0]?.toLocaleLowerCase()}${profileData?.last_name[0]?.toLocaleLowerCase()}${profileData?.phone_number?.slice(0,3)}`}</div>
+          <div className='text-4xl font-bold'>{`${profileData?.first_name} ${profileData?.last_name}`}</div>
+          <div className='text-lg mt-5'>{`${profileData?.phone_number} | ${profileData?.username}`}</div>
+          <div className='text-lg mt-2'></div>
+          <div>{`Address: ${userAddress}`}</div>
           <div className='flex justify-between mt-5'>
             <div className='flex flex-col items-center'>
               <div className='text-2xl font-bold'>5</div>
@@ -60,6 +140,16 @@ const Profile = () => {
             <div className='flex flex-col items-center'>
               <div className='text-2xl font-bold'>7</div>
               <div>Booked Rides</div>
+            </div>
+          </div>
+          <div className='flex justify-between mt-5'>
+            <div className='flex flex-col items-center'>
+              <div className='text-2xl font-bold'>{profileData?.driver_rating}</div>
+              <div>Driver Rating</div>
+            </div>
+            <div className='flex flex-col items-center'>
+              <div className='text-2xl font-bold'>{profileData?.user_rating}</div>
+              <div>Rider Rating</div>
             </div>
           </div>
           <Button width='w-full' height='h-5' text='My Rides' onClick={() => console.log("Button Clicked")} />

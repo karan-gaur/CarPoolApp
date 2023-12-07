@@ -20,7 +20,8 @@ const navItems: Array<NavItem> = [
 const profileMenuItems: Array<NavItem> = [
     { name: 'Profile', path: '/profile', current: false },
     { name: 'Login', path: '/login', current: false },
-    { name: 'Logout', path: '/signup', current: false },
+    { name: 'Logout', path: '/login', current: false },
+    { name: 'Signup', path: '/signup', current: false },
 ]
 
 const Navbar = () => {
@@ -55,7 +56,12 @@ const Navbar = () => {
                                             key={item.name}
                                             className='text-black rounded-md px-3 py-2 text-sm font-medium'
                                         >
-                                            <Link onClick={() => setProfileMenu(false)} to={item.path}>{item.name}</Link>
+                                            <Link onClick={() => {
+                                                    setProfileMenu(false)
+                                                    if(item.name === 'Logout') {
+                                                        localStorage.removeItem('token')
+                                                    }
+                                                }} to={item.path}>{item.name}</Link>
                                         </li>
                                     ))
                                 }

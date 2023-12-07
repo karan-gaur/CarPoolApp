@@ -8,7 +8,7 @@ import ThreejsPlane from "../components/ImagePlane";
 import Transition from "../components/Transition";
 
 const Login = () => {
-  const BASE_URL = "";
+  const BASE_URL = "http://localhost:3000";
 
   const [formData, setFormData] = useState({
     username: "",
@@ -31,12 +31,12 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleLogin = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch(`${BASE_URL}/auth/login`, {
+      const res = await fetch(`${BASE_URL}/login`, {
         method: "post",
         headers: {
           "Content-Type": "application/json",
@@ -57,8 +57,9 @@ const Login = () => {
         },
       });
 
+      localStorage.setItem("token", result.token);
       setLoading(false);
-      navigate("/home");
+      navigate("/");
     } catch (error) {
       setLoading(false);
     }

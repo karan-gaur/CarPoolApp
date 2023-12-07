@@ -1,7 +1,6 @@
 
 import ThreejsPlane from '../components/ImagePlane';
 import Transition from '../components/Transition';
-import CarDrivingAnimation from '../components/CarDrivingAnimation';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import MapComponent from '../components/MapComponent';
@@ -99,7 +98,6 @@ const RideDetail = () => {
                     </div>
                 </div>
             </div>
-
         </>
     )
 }
