@@ -450,6 +450,26 @@ router.post("/end", checkAuthentication, async function (req, res, next) {
         await client.query(
             `UPDATE ${constants.RIDE_D_TABLE} SET ${constants.RIDE_D_END_TIME} = ${time}, ${constants.RIDE_D_CRATE} = ${req.body.crating}, ${constants.RIDE_D_CREVIEW} = '${req.body.creview}', ${constants.RIDE_D_RIDE_COMPLETED} = true WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id} AND ${constants.RIDE_D_USERNAME} = '${req.body.username}'`
         );
+
+        // Checking if all rides in the ride_id are completed
+        const rides = await client.query(
+            `SELECT * FROM ${constants.RIDE_D_TABLE} WHERE ${constants.RIDE_D_RID_FK} = ${req.body.ride_id}`
+        );
+        var allRidesCompleted = true;
+        for (i = 0; i < rides.rows.length; i++) {
+            if (!rides.rows[i][constants.RIDE_D_RIDE_COMPLETED]) {
+                allRidesCompleted = false;
+                break;
+            }
+        }
+
+        if (allRidesCompleted) {
+            logger.info(`All rides associated with ride_id - '${req.body.ride_id}' is completed`);
+            await client.query(
+                `UPDATE ${constants.RIDE_TABLE} SET ${constants.RIDE_COMPLETED} = true WHERE ${constants.RIDE_PK} = ${req.body.ride_id}`
+            );
+        }
+
         logger.info(`Ride ended for user '${req.body.username}' for ride - '${req.body.ride_id}'`);
         return res
             .status(200)
