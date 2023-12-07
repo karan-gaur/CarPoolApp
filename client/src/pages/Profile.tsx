@@ -29,6 +29,8 @@ const Profile = () => {
 
   const [profileData, setProfileData] = useState<ProfileResponse | null>(null);
   const [userAddress, setUserAddress] = useState<string>('');
+  const [userDriver, setUserDriver] = useState<number>(0);
+  const [userPassanger, setUserPassanger] = useState<number>(0);
 
   const fetchData = useMemo(
     () => async () => {
@@ -59,8 +61,26 @@ const Profile = () => {
 
         console.log('Profile data:', response.data);
         const addressObj = response.data.address[0];
-        const address = `${addressObj.apt_number} ${addressObj.street_name}, ${addressObj.city_name}, ${addressObj.state}, ${addressObj.zip_code}`;
+        const address = `${addressObj.apt_number} ${addressObj.street_name}, ${addressObj.city}, ${addressObj.state}, ${addressObj.zip_code}`;
         setUserAddress(address);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    },
+    [token]
+  );
+
+  const fetchUserStats = useMemo(
+    () => async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/stats', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setUserDriver(response.data.drives);
+        setUserPassanger(response.data.rides);
       } catch (error) {
         console.error('Error fetching profile data:', error);
       }
@@ -86,6 +106,7 @@ const Profile = () => {
 
       fetchData();
       fetchUserAddressData();
+      fetchUserStats();
       
     }
   }, [isAuthenticated, token, user, navigate, dispatch]);
@@ -139,11 +160,11 @@ const Profile = () => {
           <div>{`Address: ${userAddress}`}</div>
           <div className='flex justify-between mt-5'>
             <div className='flex flex-col items-center'>
-              <div className='text-2xl font-bold'>5</div>
+              <div className='text-2xl font-bold'>{userDriver}</div>
               <div>Published Rides</div>
             </div>
             <div className='flex flex-col items-center'>
-              <div className='text-2xl font-bold'>7</div>
+              <div className='text-2xl font-bold'>{userPassanger}</div>
               <div>Booked Rides</div>
             </div>
           </div>
