@@ -1,0 +1,20 @@
+.ongoing-container {
+    justify-content: center;
+    margin: auto;
+    width: 100vw;
+    padding-top: 15rem;
+}
+
+.ongoing-container h1 {
+    font-size: 4rem;
+    padding-bottom: 1rem;
+}
+
+.ongoing-container h3 {
+    font-size: 1.5rem;
+    
+}
+
+.ongoing-container a {
+    color: rgb(117, 0, 219);
+}
