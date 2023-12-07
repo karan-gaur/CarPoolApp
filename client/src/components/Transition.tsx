@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import gsap, { Power4 } from 'gsap';
+import CarDrivingAnimation from './CarDrivingAnimation';
 
 const Transition = () => {
 
@@ -17,7 +18,7 @@ const Transition = () => {
             });
 
             timeline.to(currentRef, {
-                duration: 1,
+                duration: 2,
                 x: '100%',
                 ease: Power4.easeIn,
             });
@@ -26,7 +27,9 @@ const Transition = () => {
 
     return (
         <div>
-            <div ref={transitionRef} className="absolute z-20 bg-teal-300 top-0 w-full h-screen"></div>
+            <div ref={transitionRef} className="absolute flex items-center z-20 bg-teal-300 top-0 w-full h-screen">
+                <CarDrivingAnimation />
+            </div>
         </div>
 
     )

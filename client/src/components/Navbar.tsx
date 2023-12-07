@@ -13,7 +13,7 @@ const navItems: Array<NavItem> = [
     { name: 'Home', path: '/', current: true },
     { name: 'Search Ride', path: '/ride-search', current: false },
     { name: 'Publish Ride', path: '/ride-publish', current: false },
-    { name: 'Ride Status', path: '/ride-status', current: false },
+    { name: 'Add a car', path: '/car-add', current: false },
     { name: 'Contact us', path: '/contact', current: false },
 ]
 
@@ -54,7 +54,7 @@ const Navbar = () => {
                     <img src={profileImage} alt="Profile Picture" className="relative w-8 h-8 rounded-full cursor-pointer" onClick={toggleProfileMenu} />
                     {
                         profileMenu &&
-                        <div className="absolute bg-yellow-500 text-left top-14 right-10 z-20 text-black rounded-md px-3 py-2 text-sm font-medium space-y-4" style={{ minWidth: '150px' }}>
+                        <div className="absolute bg-blue-400 text-left top-14 right-10 z-20 text-black rounded-md px-3 py-2 text-sm font-medium space-y-4" style={{ minWidth: '150px' }}>
                             <ul >
                                 {
                                     profileMenuItems.map((item) => (
@@ -82,7 +82,7 @@ const Navbar = () => {
                 </div>
             </div>
             <div className={`flex justify-between flex-col items-start nav-menu ${navMenu ? 'active' : ''}`}>
-                <div className='absolute z-10 bg-blue-500 min-w-full flex flex-col items-start'>
+                <div className='absolute z-10 bg-teal-300 min-w-full flex flex-col items-start'>
                     {
                         navMenu &&
                         navItems.map((item) => (

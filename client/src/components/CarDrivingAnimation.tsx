@@ -1,4 +1,8 @@
 import React, { useEffect, useRef } from 'react'
+import gsap from 'gsap';
+import imageAnimation from '../assets/CarDrivingAnimation.json';
+import Lottie from "lottie-react";
+
 
 const CarDrivingAnimation = () => {
     const carRef = useRef(null);
@@ -25,7 +29,7 @@ const CarDrivingAnimation = () => {
                 style={{ width: '100%', display: 'flex' }}
                 ref={carRef}
             >
-                <CarDrivingAnimation />
+                <Lottie animationData={imageAnimation} loop={true} />            
             </div>
         </div>
     )

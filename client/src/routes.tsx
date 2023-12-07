@@ -38,10 +38,6 @@ export const publicRoutes = [
         element: <RideSearch />
     },
     {
-        path: '/ride-status',
-        element: <RideStatus />
-    },
-    {
         path: '/rides',
         element: <Rides />
     },
