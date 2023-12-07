@@ -5,8 +5,6 @@ const { checkAuthentication, getCarDetails, getUserDetails, getLocation, getAddr
 
 var router = express.Router();
 
-router.post("/history", checkAuthentication, function (req, res, next) {});
-
 router.post("/details", checkAuthentication, async function (req, res, next) {});
 
 router.post("/publish", checkAuthentication, async function (req, res, next) {
@@ -67,11 +65,15 @@ router.post("/publish", checkAuthentication, async function (req, res, next) {
 
 router.post("/user_review", checkAuthentication, async function (req, res, next) {});
 
-router.post("/active", checkAuthentication, async function (req, res, next) {
-    if (req.body.is_driver == undefined) {
-        logger.warn(`Request has missing parameters - 'is_driver'`);
+router.post("/history", checkAuthentication, async function (req, res, next) {
+    const expectedParams = ["is_driver", "completed"];
+    const missingParams = expectedParams.filter((param) => !(param in req.body));
+
+    if (missingParams.length > 0) {
+        // Respond with an error if there are missing parameters
+        logger.warn(`Request has missing parameters - ${missingParams}`);
         return res.status(400).json({
-            msg: `Missing parameters: 'is_driver'`,
+            msg: `Missing parameters: ${missingParams.join(", ")}`,
         });
     }
 
@@ -95,9 +97,9 @@ router.post("/active", checkAuthentication, async function (req, res, next) {
                     constants.RIDE_TABLE
                 } WHERE ${constants.RIDE_DRIVER_IF_FK} = ${userDetails.rows[0][constants.USERS_PK]} AND ${
                     constants.RIDE_COMPLETED
-                } = false) AS r on r.${constants.RIDE_CAR_ID_FK}= c.${constants.CARS_PK}`
+                } = ${req.body.completed}) AS r on r.${constants.RIDE_CAR_ID_FK}= c.${constants.CARS_PK}`
             );
-            logger.info(`Fetched all active rides for the driver - ${req.headers.token.username}`);
+            logger.info(`Fetched all rides for the driver - ${req.headers.token.username}`);
         } else {
             activeRides = await client.query(`
             SELECT R.${constants.RIDE_PK}, R.${constants.RIDE_DEPARTURE}, RD.${constants.RIDE_D_SOURCE}, RD.${
@@ -106,11 +108,11 @@ router.post("/active", checkAuthentication, async function (req, res, next) {
                 constants.RIDE_TABLE
             } AS R INNER JOIN ${constants.RIDE_D_TABLE} AS RD ON R.${constants.RIDE_PK} = RD.${
                 constants.RIDE_D_RID_FK
-            } WHERE RD.${constants.RIDE_D_RIDE_COMPLETED} = false AND RD.${constants.RIDE_D_UID_FK} = ${
+            } WHERE RD.${constants.RIDE_D_RIDE_COMPLETED} = ${req.body.completed} AND RD.${constants.RIDE_D_UID_FK} = ${
                 userDetails.rows[0][constants.USERS_PK]
             }
             `);
-            logger.info(`Fetched active rides for customer - '${req.headers.token.username}`);
+            logger.info(`Fetched rides for customer - '${req.headers.token.username}`);
         }
         for (i = 0; i < activeRides.rows.length; i++) {
             if (activeRides.rows[i][constants.RIDE_SOURCE_ID] !== undefined)
@@ -219,6 +221,6 @@ router.post("/schedule", checkAuthentication, async function (req, res, next) {
 
 router.post("/start", function (req, res, next) {});
 
-router.post("/end", function (req, res, next) {});
+router.post("/end", checkAuthentication, function (req, res, next) {});
 
 module.exports = router;
