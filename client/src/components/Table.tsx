@@ -1,6 +1,14 @@
 import React from 'react';
-import MaterialTable, { Column } from '@material-table/core';
-import { createTheme, ThemeProvider } from '@material-ui/core/styles';
+// import MaterialTable, { Column } from '@material-table/core';
+// import { createTheme, ThemeProvider } from '@material-ui/core/styles';
+import { useMemo } from 'react';
+import {
+  MantineReactTable,
+  useMantineReactTable,
+  type MRT_ColumnDef,
+} from 'mantine-react-table';
+
+
 
 interface RowData {
   id: number;
@@ -11,47 +19,17 @@ interface RowData {
 
 interface MyMaterialTableProps {
   data: RowData[];
-  columns: Column<RowData>[];
+  columns: MRT_ColumnDef<RowData>[];
 }
 
 const Table: React.FC<MyMaterialTableProps> = ({ data, columns }) => {
-  const darkTheme = createTheme({
-    palette: {
-      type: 'dark',
-    },
+
+  const table = useMantineReactTable({
+    columns,
+    data,
   });
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <MaterialTable
-        title="User Data"
-        columns={columns}
-        data={data}
-        options={{
-          sorting: true,
-          paging: true,
-          filtering: true,
-        }}
-        localization={{
-          body: {
-            emptyDataSourceMessage: 'No records to display',
-          },
-          toolbar: {
-            searchTooltip: 'Search',
-            searchPlaceholder: 'Search',
-          },
-          pagination: {
-            labelRows: 'rows per page',
-            labelDisplayedRows: '{from}-{to} of {count}',
-            firstTooltip: 'First Page',
-            previousTooltip: 'Previous Page',
-            nextTooltip: 'Next Page',
-            lastTooltip: 'Last Page',
-          },
-        }}
-      />
-    </ThemeProvider>
-  );
+  return <MantineReactTable table={table} />;
 };
 
 export default Table;

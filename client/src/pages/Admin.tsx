@@ -7,8 +7,8 @@ import Button from '../components/Button';
 import axios from 'axios';
 
 interface ColumnType {
-  title: string;
-  field: string;
+  accessorKey: string;
+  header: string;
 }
 
 const Admin: React.FC = () => {
@@ -35,8 +35,8 @@ const Admin: React.FC = () => {
         console.log('Response data:', responseData.data[0]);
         setTableData(responseData.data);
         const cols = Object.keys(responseData.data[0]).map((col) => ({
-          title: col,
-          field: col,
+          accessorKey: col,
+          header: col,
         }));
         setColumns(cols);
         console.log('Table data:', tableData);
