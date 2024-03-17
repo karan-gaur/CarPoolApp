@@ -22,8 +22,6 @@ const EditProfileForm: React.FC = () => {
   const token = localStorage.getItem('token');
   const BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
 
-  const [isEditing, setIsEditing] = useState(false);
-
   useEffect(() => {
     const fetchData = async () => {
       try {

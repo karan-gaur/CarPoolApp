@@ -1,7 +1,4 @@
 import React from 'react';
-// import MaterialTable, { Column } from '@material-table/core';
-// import { createTheme, ThemeProvider } from '@material-ui/core/styles';
-import { useMemo } from 'react';
 import {
   MantineReactTable,
   useMantineReactTable,

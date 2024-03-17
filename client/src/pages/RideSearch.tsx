@@ -19,15 +19,6 @@ interface BookedRideType {
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
-const containerStyle = {
-  width: '100%',
-  height: '25rem'
-};
-
-const center = {
-  lat: 40.735657,
-  lng: -74.172363
-};
 
 interface CorsType {
   lat: number | null;
@@ -38,7 +29,6 @@ const RideSearch = () => {
   const navigate = useNavigate();
   const { user, token, isAuthenticated, dispatch } = useAuth();
   const {
-    ready: readyFrom,
     value: valueFrom,
     setValue: setValueFrom,
     suggestions: suggestionsFrom,
@@ -49,7 +39,6 @@ const RideSearch = () => {
   });
 
   const {
-    ready: readyTo,
     value: valueTo,
     setValue: setValueTo,
     suggestions: suggestionsTo,

@@ -1,6 +1,5 @@
 import { useState, FormEvent, ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import signupImg from "../assets/carpool-graphic1.png";
 import Transition from "../components/Transition";
 import ThreejsPlane from "../components/ImagePlane";
 import Button from "../components/Button";
@@ -16,7 +15,7 @@ const SignUp = () => {
     password: "",
    
   });
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
 
   const navigate = useNavigate();
 

@@ -3,13 +3,11 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import RidePublish from './pages/RidePublish';
 import RideSearch from './pages/RideSearch';
-import RideStatus from './pages/RideStatus';
 import Rides from './pages/Rides';
 import SignUp from './pages/SignUp';
 import RideDetail from './pages/RideDetail';
 import CarAdd from './pages/CarAdd';
 import Admin from './pages/Admin';
-import EditProfileFrom from './components/EditProfileForm';
 import Contact from './pages/Contact';
 import EditProfileForm from './components/EditProfileForm';
 export const publicRoutes = [

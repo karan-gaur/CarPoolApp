@@ -1,4 +1,3 @@
-import React from 'react'
 import Transition from '../components/Transition';
 import { Link } from 'react-router-dom';
 import './RideStatus.css';

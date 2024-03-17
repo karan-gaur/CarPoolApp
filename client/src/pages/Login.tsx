@@ -15,8 +15,7 @@ const Login = () => {
     password: "",
   });
 
-  const [loading, setLoading] = useState(false);
-
+  const [, setLoading] = useState(false);
   const authContext = useContext(AuthContext);
   if (!authContext) {
     // Handle the case where AuthContext is undefined (e.g., throw an error or return early)

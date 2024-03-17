@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Buttton from '../components/Button';
 import ThreejsPlane from '../components/ImagePlane';
 import Transition from '../components/Transition';

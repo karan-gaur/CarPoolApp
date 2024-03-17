@@ -20,9 +20,6 @@ interface CarAddState {
     color: string
 }
 
-interface CarDeleteState {
-    number: string
-}
 
 const CarAdd: React.FC = () => {
     const navigate = useNavigate();

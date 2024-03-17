@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useReducer } from "react";
+import React, { createContext, useEffect, useReducer } from "react";
 
 export interface AuthContextProps {
   user: null | { id: number; name: string }; // Adjust the user type accordingly

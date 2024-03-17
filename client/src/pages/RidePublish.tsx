@@ -1,7 +1,7 @@
 import Transition from '../components/Transition';
 import Buttton from '../components/Button';
 import usePlacesAutocomplete from 'use-places-autocomplete';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import MapComponent from '../components/MapComponent';
 import { getCoordinatesFromAddress } from '../services/googleApiService';
@@ -14,16 +14,6 @@ interface FormDataType {
   date: string,
 }
 
-const containerStyle = {
-  width: '100%',
-  height: '25rem'
-};
-
-const center = {
-  lat: 40.735657,
-  lng: -74.172363
-};
-
 interface CorsType {
   lat: number | null;
   lng: number | null;
@@ -33,7 +23,6 @@ const RidePublish = () => {
   const navigate = useNavigate();
     const { user, token, isAuthenticated, dispatch } = useAuth();
   const {
-    ready: readyFrom,
     value: valueFrom,
     setValue: setValueFrom,
     suggestions: suggestionsFrom,
@@ -44,7 +33,6 @@ const RidePublish = () => {
   });
 
   const {
-    ready: readyTo,
     value: valueTo,
     setValue: setValueTo,
     suggestions: suggestionsTo,

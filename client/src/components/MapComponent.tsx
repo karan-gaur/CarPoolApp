@@ -1,6 +1,6 @@
 // MapComponent.tsx
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, Marker, DirectionsService, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api';
 
 interface MapComponentProps {
     srcLat: number | null;
@@ -25,7 +25,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ srcLat, srcLng, destLat, de
         libraries: ['places']
     });
 
-    const [map, setMap] = useState(null);
+    const [, setMap] = useState(null);
     const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
 
     const onLoad = React.useCallback((map: any) => setMap(map), []);

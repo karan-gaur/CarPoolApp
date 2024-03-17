@@ -1,8 +1,6 @@
 
-import ThreejsPlane from '../components/ImagePlane';
 import Transition from '../components/Transition';
-import { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
+import { useEffect, useState } from 'react';
 import MapComponent from '../components/MapComponent';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate, useParams } from 'react-router-dom';
