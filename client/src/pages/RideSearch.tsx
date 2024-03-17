@@ -77,6 +77,8 @@ const RideSearch = () => {
 
   const [rideFound, setRideFound] = useState(false);
 
+  const BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
+
   const renderSuggestionsFrom = () =>
     suggestionsFrom.data.map((suggestion) => {
       const {
@@ -107,7 +109,7 @@ const RideSearch = () => {
 
   const onRideSearch = async () => {
     try {
-      const response = await axios.post('http://localhost:3000/ride/schedule', {
+      const response = await axios.post(`${BASE_URL}/ride/schedule`, {
         "source_addr": src,
         "dest_addr": dest,
       }, { 

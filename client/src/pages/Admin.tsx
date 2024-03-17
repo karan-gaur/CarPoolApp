@@ -17,6 +17,7 @@ const Admin: React.FC = () => {
   const [columns, setColumns] = useState<ColumnType[]>([]);
 
   const token = localStorage.getItem('token');
+  const BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
 
   const handleQuerySubmit = async () => {
     try {
@@ -25,7 +26,7 @@ const Admin: React.FC = () => {
         'Authorization': `Bearer ${token}`
       };
 
-      const response = await axios.post('http://localhost:3000/admin',
+      const response = await axios.post(`${BASE_URL}/admin`,
         { query: sqlQuery },
         { headers }
       );

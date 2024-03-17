@@ -65,8 +65,10 @@ const RidePublish = () => {
   const [src, setSrc] = useState<string>('');
   const [dest, setDest] = useState<string>('');
 
+  const BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
+
   const getCars = async () => {
-    const res = await axios.get('http://localhost:3000/cars', {
+    const res = await axios.get(`${BASE_URL}/cars`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -117,7 +119,7 @@ const RidePublish = () => {
       const carNumber = selectedCar.split('_')[2];
       const seats = selectedCar.split('_')[3];
       
-      const response = await axios.post('http://localhost:3000/ride/publish', {
+      const response = await axios.post(`${BASE_URL}/ride/publish`, {
         "car_number": carNumber,
         "departure_time": new Date().getTime(),
         "seats_available": seats,

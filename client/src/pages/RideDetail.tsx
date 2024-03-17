@@ -21,11 +21,11 @@ const RideDetail = () => {
     const [ srcCor, setSrcCor ] = useState<LongLatType | null>(null);
     const [ destCor, setDestCor ] = useState<LongLatType | null>(null);
 
-
+    const BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
 
     const fetchDetails = async () => {
         console.log('id', id);
-        const res = await axios.post('http://localhost:3000/ride/details',
+        const res = await axios.post(`${BASE_URL}/ride/details`,
             {
                 "ride_id": id
             },
@@ -68,7 +68,7 @@ const RideDetail = () => {
     
 
     const tripStart = async (username: string) => {
-        const res = await axios.post('http://localhost:3000/ride/start',
+        const res = await axios.post(`${BASE_URL}/ride/start`,
             {
                 "ride_id": id,
                 "username": username
@@ -85,7 +85,7 @@ const RideDetail = () => {
     }
 
     const tripEnd = async (username: string) => {
-        const res = await axios.post('http://localhost:3000/ride/end',
+        const res = await axios.post(`${BASE_URL}/ride/end`,
             {
                 "ride_id": id,
                 "username": username,

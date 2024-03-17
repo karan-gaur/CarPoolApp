@@ -32,10 +32,12 @@ const Profile = () => {
   const [userDriver, setUserDriver] = useState<number>(0);
   const [userPassanger, setUserPassanger] = useState<number>(0);
 
+  const BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
+
   const fetchData = useMemo(
     () => async () => {
       try {
-        const response = await axios.get('http://localhost:3000/profile', {
+        const response = await axios.get(`${BASE_URL}/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -53,7 +55,7 @@ const Profile = () => {
   const fetchUserAddressData = useMemo(
     () => async () => {
       try {
-        const response = await axios.get('http://localhost:3000/address', {
+        const response = await axios.get(`${BASE_URL}/address`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -73,7 +75,7 @@ const Profile = () => {
   const fetchUserStats = useMemo(
     () => async () => {
       try {
-        const response = await axios.get('http://localhost:3000/stats', {
+        const response = await axios.get(`${BASE_URL}/stats`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

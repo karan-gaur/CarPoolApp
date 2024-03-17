@@ -20,6 +20,7 @@ const EditProfileForm: React.FC = () => {
   });
 
   const token = localStorage.getItem('token');
+  const BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -36,7 +37,7 @@ const EditProfileForm: React.FC = () => {
         console.log('Authenticated');
 
         // Fetch user profile data directly using the token
-        const profileResponse = await axios.get('http://localhost:3000/profile', {
+        const profileResponse = await axios.get(`${BASE_URL}/profile`, {
           headers: {
             Authorization: `Bearer ${storedToken}`,
           },
@@ -76,7 +77,7 @@ const EditProfileForm: React.FC = () => {
       }
 
       // Update user profile
-      const profileUpdateResponse = await axios.post('http://localhost:3000/profile', userDetails, {
+      const profileUpdateResponse = await axios.post(`${BASE_URL}/profile`, userDetails, {
         headers: {
           Authorization: `Bearer ${storedToken}`,
         },

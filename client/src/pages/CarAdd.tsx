@@ -29,7 +29,7 @@ const CarAdd: React.FC = () => {
     const formRef1 = useRef<HTMLDivElement | null>(null);
     const formRef2 = useRef<HTMLDivElement | null>(null);
     const { user, token, isAuthenticated, dispatch } = useAuth();
-    
+    const BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
 
     useEffect(() => {
         const form1 = formRef1.current;
@@ -75,7 +75,7 @@ const CarAdd: React.FC = () => {
         e.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:3000/cars', formData, {
+            const response = await axios.post(`${BASE_URL}/cars`, formData, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -111,7 +111,7 @@ const CarAdd: React.FC = () => {
 
     const handleDeleteSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        const response = await axios.delete(`http://localhost:3000/cars`, {
+        const response = await axios.delete(`${BASE_URL}/cars`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             },

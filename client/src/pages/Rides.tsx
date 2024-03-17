@@ -67,6 +67,7 @@ const Rides = () => {
   const [rides, setRides] = useState<RideType[]>([]);
   const [selectedOption, setSelectedOption] = useState('');
 
+  const BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
 
   useEffect(() => {
     const isToken = localStorage.getItem("token");
@@ -88,7 +89,7 @@ const Rides = () => {
   const handleNavClick = async (isDriver: boolean, completed: boolean) => {
     try {
 
-      const response = await axios.post('http://localhost:3000/ride/history', {
+      const response = await axios.post(`${BASE_URL}/ride/history`, {
         "is_driver": isDriver,
         "completed": completed
       }, {

@@ -7,7 +7,7 @@ import Button from "../components/Button";
 import SignupAnimation from "../components/SignupAnimation";
 
 const SignUp = () => {
-  const BASE_URL = "http://localhost:3000";
+  const BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",

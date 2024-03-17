@@ -21,7 +21,7 @@ const center = {
 
 const MapComponent: React.FC<MapComponentProps> = ({ srcLat, srcLng, destLat, destLng }) => {
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: import.meta.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+        googleMapsApiKey: import.meta.env.VITE_REACT_APP_GOOGLE_MAPS_API_KEY,
         libraries: ['places']
     });
 
