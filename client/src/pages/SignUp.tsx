@@ -58,6 +58,41 @@ const SignUp = () => {
       <Transition />
       <ThreejsPlane />
 
+      <div className="mx-auto w-full flex z-10">
+        {/* <div className="w-2/5 h-[300px] ml-10">
+          <SignupAnimation />
+        </div> */}
+        <div style={styles.container}>
+          <h1 style={styles.heading}>Login</h1>
+
+          <label htmlFor="email" className="block text-left mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
+          <input
+            type="email"
+            name="username"
+            value={formData.username}
+            onChange={handleInputChange}
+            style={styles.input}
+            placeholder="Enter your email"
+            className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+            required
+          />
+
+          <label htmlFor="password" className="block text-left mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+            style={styles.input}
+            placeholder="Enter your password"
+            className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+            required
+          />
+
+          <Button width='w-full' height='h-5' text='Login' onClick={handleLogin}></Button>
+        </div>
+      </div>
+
       <div className="max-w-[1170px] mx-auto z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 ">
           {/* ============ img box ========= */}

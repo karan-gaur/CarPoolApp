@@ -18,7 +18,7 @@ const Transition = () => {
             });
 
             timeline.to(currentRef, {
-                duration: 2,
+                duration: 1.2,
                 x: '100%',
                 ease: Power4.easeIn,
             });
@@ -27,7 +27,7 @@ const Transition = () => {
 
     return (
         <div>
-            <div ref={transitionRef} className="absolute flex items-center z-20 bg-teal-300 top-0 w-full h-screen">
+            <div ref={transitionRef} className="absolute flex items-center z-20 bg-black top-0 w-full h-screen">
                 <CarDrivingAnimation />
             </div>
         </div>

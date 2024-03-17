@@ -44,7 +44,7 @@ const Navbar = () => {
         
     ]
     return (
-        <div className='w-full fixed flex flex-col z-20'>
+        <div className='w-full fixed flex flex-col z-20 bg-black'>
             <div className='flex justify-between items-center px-5 pt-2'>
                 <img
                     className="h-12 max-sm:pl-3"
@@ -55,13 +55,13 @@ const Navbar = () => {
                     <img src={profileImage} alt="Profile Picture" className="relative w-8 h-8 rounded-full cursor-pointer" onClick={toggleProfileMenu} />
                     {
                         profileMenu &&
-                        <div className="absolute bg-blue-400 text-left top-14 right-10 z-20 text-black rounded-md px-3 py-2 text-sm font-medium space-y-4" style={{ minWidth: '150px' }}>
+                        <div className="absolute bg-black text-left top-14 right-10 z-20 text-black rounded-md px-3 py-2 text-sm font-medium space-y-4" style={{ minWidth: '150px' }}>
                             <ul >
                                 {
                                     profileMenuItems.map((item) => (
                                         <li
                                             key={item.name}
-                                            className='text-black rounded-md px-3 py-2 text-sm font-medium'
+                                            className='text-white rounded-md px-3 py-2 text-sm font-medium'
                                         >
                                             <Link onClick={() => {
                                                     setProfileMenu(false)
@@ -83,7 +83,7 @@ const Navbar = () => {
                 </div>
             </div>
             <div className={`flex justify-between flex-col items-start nav-menu ${navMenu ? 'active' : ''}`}>
-                <div className='absolute z-10 bg-teal-300 min-w-full flex flex-col items-start'>
+                <div className='absolute z-10 bg-black min-w-full flex flex-col items-start'>
                     {
                         navMenu &&
                         navItems.map((item) => (
@@ -91,7 +91,7 @@ const Navbar = () => {
                                 onClick={() => setNavMenu(false)}
                                 key={item.path}
                                 to={item.path}
-                                className='text-black rounded-md ml-4 px-3 py-2 text-sm font-medium'
+                                className='text-white rounded-md ml-4 px-3 py-2 text-sm font-medium'
                             >
                                 {item.name}
                             </Link>

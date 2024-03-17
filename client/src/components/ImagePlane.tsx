@@ -10,7 +10,7 @@ function ThreejsPlane() {
 
     return (
       <>
-        <div className="bg-container" ref={containerRef}>
+        <div className="bg-container mt-28" ref={containerRef}>
           <Canvas
             camera={{ position: [0, 0, 5] }}
             dpr={window.devicePixelRatio}
