@@ -1,4 +1,4 @@
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, FormEvent, ChangeEvent, CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Transition from "../components/Transition";
 import ThreejsPlane from "../components/ImagePlane";
@@ -63,7 +63,40 @@ const SignUp = () => {
           <SignupAnimation />
         </div> */}
         <div style={styles.container}>
-          <h1 style={styles.heading}>Login</h1>
+          <h1 style={styles.heading}>Signup</h1>
+
+          <label htmlFor="first_name" className="block text-left mb-2 text-sm font-medium text-gray-900 dark:text-white">First Name</label>
+          <input
+            type="text"
+            name="first_name"
+            value={formData.first_name}
+            onChange={handleInputChange}
+            placeholder="First Name"
+            className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+            required
+          />
+
+          <label htmlFor="last_name" className="block text-left mb-2 text-sm font-medium text-gray-900 dark:text-white">Last Name</label>
+          <input
+            type="text"
+            name="last_name"
+            value={formData.last_name}
+            onChange={handleInputChange}
+            placeholder="Last Name"
+            className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+            required
+          />
+
+          <label htmlFor="phone_number" className="block text-left mb-2 text-sm font-medium text-gray-900 dark:text-white">Contact Number</label>
+          <input
+            type="text"
+            name="phone_number"
+            value={formData.phone_number}
+            onChange={handleInputChange}
+            placeholder="PhoneNumber"
+            className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+            required
+          />
 
           <label htmlFor="email" className="block text-left mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
           <input
@@ -71,8 +104,7 @@ const SignUp = () => {
             name="username"
             value={formData.username}
             onChange={handleInputChange}
-            style={styles.input}
-            placeholder="Enter your email"
+            placeholder="Email"
             className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             required
           />
@@ -80,120 +112,65 @@ const SignUp = () => {
           <label htmlFor="password" className="block text-left mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
           <input
             type="password"
-            name="password"
             value={formData.password}
             onChange={handleInputChange}
-            style={styles.input}
-            placeholder="Enter your password"
+            name="password"
+            placeholder="Password"
             className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             required
           />
-
-          <Button width='w-full' height='h-5' text='Login' onClick={handleLogin}></Button>
-        </div>
-      </div>
-
-      <div className="max-w-[1170px] mx-auto z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 ">
-          {/* ============ img box ========= */}
-          <div className="w-full h-full">
-            {/* <figure className="rounded-l-lg w-full h-full">
-              <img className="w-full h-full rounded-l-lg object-cover" src={signupImg} alt="" />
-            </figure> */}
-            <SignupAnimation />
-          </div>
-  
-          <div className="rounded-l-lg  lg:pl-16 py-10">
-            <h3 className="text-headingColor text-[22px] leading-9 font-bold mb-10">
-              Create an <span className="text-[#0067FF]">Account</span>
-            </h3>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-5">
-                <input
-                  type="text"
-                  name="first_name"
-                  value={formData.first_name}
-                  onChange={handleInputChange}
-                  placeholder="First Name"
-                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  required
-                />
-              </div>
-              <div className="mb-5">
-                <input
-                  type="text"
-                  name="last_name"
-                  value={formData.last_name}
-                  onChange={handleInputChange}
-                  placeholder="Last Name"
-                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  required
-                />
-              </div>
-              <div className="mb-5">
-                <input
-                  type="text"
-                  name="phone_number"
-                  value={formData.phone_number}
-                  onChange={handleInputChange}
-                  placeholder="PhoneNumber"
-                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  required
-                />
-              </div>
-  
-              <div className="mb-5">
-                <input
-                  type="email"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  placeholder="Email"
-                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  required
-                />
-              </div>
-  
-              <div className="mb-5">
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  name="password"
-                  placeholder="Password"
-                  className="input-container border border-solid text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  required
-                />
-              </div>
-              
-  
-              <div className="mt-7">
-                <Button width='w-full' height='h-5' text='Sign Up' onClick={handleSubmit}></Button>
-
-                {/* <button
-                  type="submit"
-                  disabled={loading && true}
-                  className="w-full bg-[#0067FF] text-white py-3 px-4 rounded-lg text-[18px] leading-[30px]"
-                 
-                >
-                 
-                  Sign Up
-                </button> */}
-              </div>
-  
-              <p className="mt-5 text-textColor text-center">
-                Already have an account?{" "}
-                <Link to="/login" className="text-[#0067FF] font-medium">
-                  Login
-                </Link>
-              </p>
-            </form>
-          </div>
+          <Button width='w-full' height='h-5' text='Signup' onClick={handleSubmit}></Button>
         </div>
       </div>
     </section>
   );
   
+};
+
+const styles: { [key: string]: CSSProperties } = {
+  page: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "100vh",
+  },
+  container: {
+    width: "25%",
+    maxWidth: "800px", // You can adjust this value
+    margin: "50px auto", // Center the container horizontally
+    padding: "20px",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
+    textAlign: "center",
+  },
+  heading: {
+    fontSize: "24px",
+    marginBottom: "20px",
+  },
+  label: {
+    display: "block",
+    marginBottom: "5px",
+    fontSize: "14px",
+    color: "#333",
+  },
+  input: {
+    width: "100%",
+    padding: "8px",
+    marginBottom: "10px",
+    borderRadius: "3px",
+    border: "1px solid #ccc",
+    boxSizing: "border-box",
+    fontSize: "14px",
+  },
+  button: {
+    width: "100%",
+    padding: "10px",
+    borderRadius: "3px",
+    background: "#007BFF",
+    color: "#fff",
+    cursor: "pointer",
+    fontSize: "16px",
+  },
 };
 
 export default SignUp;
