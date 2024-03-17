@@ -1,9 +1,8 @@
 import { useState, FormEvent, ChangeEvent, CSSProperties } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Transition from "../components/Transition";
 import ThreejsPlane from "../components/ImagePlane";
 import Button from "../components/Button";
-import SignupAnimation from "../components/SignupAnimation";
 
 const SignUp = () => {
   const BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
