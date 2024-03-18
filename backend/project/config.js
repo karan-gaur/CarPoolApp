@@ -34,15 +34,24 @@ var logger = winston.createLogger({
 });
 
 // Database Configurations
-const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
-    max: 10, // Maximum number of clients in the pool
-    idleTimeoutMillis: 30000, // Time a client is allowed to remain idle before being closed
-});
+const dbconfig = {};
+if(process.env.NODE_ENV === "production") {
+    dbconfig = {
+        connectionString: process.env.POSTGRES_URL
+    }
+} else {
+    dbconfig = {
+        user: process.env.DB_USER,
+        host: process.env.DB_HOST,
+        database: process.env.DB_DATABASE,
+        password: process.env.DB_PASSWORD,
+        port: process.env.DB_PORT,
+        max: 10, // Maximum number of clients in the pool
+        idleTimeoutMillis: 30000, // Time a client is allowed to remain idle before being closed
+    }
+}
+
+const pool = new Pool(dbconfig);
 
 module.exports = {
     // Cahce Configuration
